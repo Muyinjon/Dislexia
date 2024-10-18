@@ -6,6 +6,11 @@ chrome.runtime.onInstalled.addListener(() => {
     title: "Read This Aloud",
     contexts: ["selection"],
   });
+  chrome.contextMenus.create({
+    id: "speak-to-text",
+    title: "Speak to Text",
+    contexts: ["editable"],
+  });
 });
 
 chrome.contextMenus.onClicked.addListener((info, tab) => {
@@ -48,6 +53,18 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
   }
 });
 
+chrome.contextMenus.onClicked.addListener((info, tab) => {
+  if (info.menuItemId === "speak-to-text") {
+    // Start STT and insert text into the active element
+    chrome.tabs.sendMessage(tab.id, { action: "startSTT" }, (response) => {
+      if (chrome.runtime.lastError) {
+        console.error(chrome.runtime.lastError);
+      }
+    });
+  }
+  // Other context menu actions...
+});
+
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.type === "tts-start") {
     chrome.notifications.create("tts-start", {
@@ -64,4 +81,20 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       message: "Finished reading the selected text.",
     });
   }
+});
+
+// Handle messages for STT active/inactive
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  if (message.type === "stt-active") {
+    // Change the extension badge and icon to indicate STT is active
+    chrome.action.setBadgeText({ text: "STT" });
+    chrome.action.setBadgeBackgroundColor({ color: "#FF0000" });
+    // Optional: Change the icon
+    chrome.action.setIcon({ path: "icons/icon-stt-active.png" });
+  } else if (message.type === "stt-inactive") {
+    // Reset the badge and icon
+    chrome.action.setBadgeText({ text: "" });
+    chrome.action.setIcon({ path: "icons/icon48.png" });
+  }
+  // Other message handlers...
 });

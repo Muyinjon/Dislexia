@@ -32,6 +32,20 @@ document.addEventListener("DOMContentLoaded", () => {
     .addEventListener("change", saveSettings);
 
   populateVoiceList();
+
+  // Event listeners for STT settings
+  document
+    .getElementById("stt-language")
+    .addEventListener("change", saveSettings);
+  document
+    .getElementById("continuous-stt")
+    .addEventListener("change", saveSettings);
+
+  // Populate the language list
+  populateLanguageList();
+
+  // Load settings
+  loadSettings();
 });
 
 // Load settings from chrome.storage
@@ -59,6 +73,10 @@ function loadSettings() {
       if (data.voiceURI) {
         document.getElementById("voice").value = data.voiceURI;
       }
+      document.getElementById("stt-language").value =
+        data.sttLanguage || "en-US";
+      document.getElementById("continuous-stt").checked =
+        data.continuousSTT !== false; // Default to true
     }
   );
 }
@@ -72,6 +90,8 @@ function saveSettings() {
   const highlightColor = document.getElementById("highlight-color").value;
   const highlightOpacity = document.getElementById("highlight-opacity").value;
   const enableHighlight = document.getElementById("enable-highlight").checked;
+  const sttLanguage = document.getElementById("stt-language").value;
+  const continuousSTT = document.getElementById("continuous-stt").checked;
 
   chrome.storage.sync.set({
     rate,
@@ -81,6 +101,8 @@ function saveSettings() {
     highlightColor,
     highlightOpacity,
     enableHighlight,
+    sttLanguage,
+    continuousSTT,
   });
 }
 
@@ -108,6 +130,24 @@ function populateVoiceOptions(voices) {
     option.value = voice.voiceURI;
     option.textContent = `${voice.name} (${voice.lang})`;
     voiceSelect.appendChild(option);
+  });
+}
+// Populate language list for STT
+function populateLanguageList() {
+  const languages = [
+    { code: "en-US", name: "English (United States)" },
+    { code: "en-GB", name: "English (United Kingdom)" },
+    { code: "es-ES", name: "Spanish (Spain)" },
+    { code: "fr-FR", name: "French (France)" },
+    { code: "de-DE", name: "German (Germany)" },
+    // Add more languages as needed
+  ];
+  const languageSelect = document.getElementById("stt-language");
+  languages.forEach((lang) => {
+    const option = document.createElement("option");
+    option.value = lang.code;
+    option.textContent = lang.name;
+    languageSelect.appendChild(option);
   });
 }
 

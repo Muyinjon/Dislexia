@@ -137,3 +137,91 @@ function clearExistingHighlights() {
     parent.normalize();
   });
 }
+
+
+// STT Functionality
+let recognition;
+let sttActive = false;
+
+function startSTT() {
+  if (sttActive) {
+    stopSTT();
+    return;
+  }
+
+  // Get the active element (should be an input or textarea)
+  const activeElement = document.activeElement;
+  if (!activeElement.isContentEditable && !['INPUT', 'TEXTAREA'].includes(activeElement.tagName)) {
+    alert('Please focus on a text input field or editable element.');
+    return;
+  }
+
+  // Get settings from storage
+  chrome.storage.sync.get(['sttLanguage', 'continuousSTT'], (data) => {
+    const language = data.sttLanguage || 'en-US';
+    const continuous = data.continuousSTT !== false;
+
+    recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+    recognition.lang = language;
+    recognition.interimResults = false;
+    recognition.continuous = continuous;
+
+    recognition.onstart = () => {
+      sttActive = true;
+      chrome.runtime.sendMessage({ type: 'stt-active' });
+    };
+
+    recognition.onresult = (event) => {
+      const transcript = Array.from(event.results)
+        .map(result => result[0].transcript)
+        .join(' ');
+
+      // Insert the transcribed text into the active element
+      if (document.activeElement === activeElement) {
+        if (activeElement.tagName === 'INPUT' || activeElement.tagName === 'TEXTAREA') {
+          activeElement.value = (activeElement.value || '') + transcript + ' ';
+        } else if (activeElement.isContentEditable) {
+          activeElement.innerHTML += transcript + ' ';
+        }
+      } else {
+        alert('The focus has changed. Please activate STT again in the desired input field.');
+        stopSTT();
+      }
+    };
+
+    recognition.onerror = (event) => {
+      console.error('Speech recognition error', event.error);
+      if (event.error === 'not-allowed' || event.error === 'denied') {
+        alert('Microphone access was denied. Please allow microphone access to use speech recognition.');
+      } else {
+        alert('An error occurred during speech recognition: ' + event.error);
+      }
+      stopSTT();
+    };
+
+    recognition.onend = () => {
+      sttActive = false;
+      chrome.runtime.sendMessage({ type: 'stt-inactive' });
+    };
+
+    recognition.start();
+  });
+}
+
+function stopSTT() {
+  if (recognition && sttActive) {
+    recognition.stop();
+    sttActive = false;
+    chrome.runtime.sendMessage({ type: 'stt-inactive' });
+  }
+}
+
+// Message listener to handle STT activation
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  if (message.action === 'startSTT') {
+    startSTT();
+    sendResponse({ status: 'success' });
+  }
+  // Other message handlers...
+  return true;
+});
