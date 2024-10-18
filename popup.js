@@ -30,10 +30,6 @@ document.addEventListener("DOMContentLoaded", () => {
   document
     .getElementById("enable-highlight")
     .addEventListener("change", saveSettings);
-
-  populateVoiceList();
-
-  // Event listeners for STT settings
   document
     .getElementById("stt-language")
     .addEventListener("change", saveSettings);
@@ -42,6 +38,8 @@ document.addEventListener("DOMContentLoaded", () => {
     .addEventListener("change", saveSettings);
 
   // Populate the language list
+
+  populateVoiceList();
   populateLanguageList();
 
   // Load settings
@@ -59,67 +57,97 @@ function loadSettings() {
       "highlightColor",
       "highlightOpacity",
       "enableHighlight",
+      "sttLanguage",
+      "continuousSTT",
     ],
     (data) => {
-      document.getElementById("rate").value = data.rate || 1;
-      document.getElementById("pitch").value = data.pitch || 1;
-      document.getElementById("volume").value = data.volume || 1;
+      document.getElementById("rate").value =
+        data.rate !== undefined ? data.rate : 1;
+      document.getElementById("pitch").value =
+        data.pitch !== undefined ? data.pitch : 1;
+      document.getElementById("volume").value =
+        data.volume !== undefined ? data.volume : 1;
+      document.getElementById("voice").value = data.voiceURI || "";
       document.getElementById("highlight-color").value =
         data.highlightColor || "#FFFF00";
       document.getElementById("highlight-opacity").value =
         data.highlightOpacity !== undefined ? data.highlightOpacity : 1;
       document.getElementById("enable-highlight").checked =
-        data.enableHighlight !== false; // Default to true
-      if (data.voiceURI) {
-        document.getElementById("voice").value = data.voiceURI;
-      }
+        data.enableHighlight !== false;
       document.getElementById("stt-language").value =
         data.sttLanguage || "en-US";
       document.getElementById("continuous-stt").checked =
-        data.continuousSTT !== false; // Default to true
+        data.continuousSTT !== false;
+
+      console.log("Settings loaded:", data);
     }
   );
 }
 
 // Save settings to chrome.storage
 function saveSettings() {
-  const rate = document.getElementById("rate").value;
-  const pitch = document.getElementById("pitch").value;
-  const volume = document.getElementById("volume").value;
+  const rate = parseFloat(document.getElementById("rate").value);
+  const pitch = parseFloat(document.getElementById("pitch").value);
+  const volume = parseFloat(document.getElementById("volume").value);
   const voiceURI = document.getElementById("voice").value;
   const highlightColor = document.getElementById("highlight-color").value;
-  const highlightOpacity = document.getElementById("highlight-opacity").value;
+  const highlightOpacity = parseFloat(
+    document.getElementById("highlight-opacity").value
+  );
   const enableHighlight = document.getElementById("enable-highlight").checked;
   const sttLanguage = document.getElementById("stt-language").value;
   const continuousSTT = document.getElementById("continuous-stt").checked;
 
-  chrome.storage.sync.set({
-    rate,
-    pitch,
-    volume,
-    voiceURI,
-    highlightColor,
-    highlightOpacity,
-    enableHighlight,
-    sttLanguage,
-    continuousSTT,
-  });
+  chrome.storage.sync.set(
+    {
+      rate,
+      pitch,
+      volume,
+      voiceURI,
+      highlightColor,
+      highlightOpacity,
+      enableHighlight,
+      sttLanguage,
+      continuousSTT,
+    },
+    () => {
+      if (chrome.runtime.lastError) {
+        console.error("Error saving settings:", chrome.runtime.lastError);
+      } else {
+        console.log("Settings saved");
+      }
+    }
+  );
 }
 
 // Populate voice list
 function populateVoiceList() {
   const voiceSelect = document.getElementById("voice");
-  voiceSelect.innerHTML = "";
 
-  let voices = speechSynthesis.getVoices();
+  function setVoiceOptions() {
+    const voices = speechSynthesis.getVoices();
 
-  if (!voices.length) {
-    speechSynthesis.addEventListener("voiceschanged", () => {
-      voices = speechSynthesis.getVoices();
-      populateVoiceOptions(voices);
+    voiceSelect.innerHTML = "";
+
+    voices.forEach((voice) => {
+      const option = document.createElement("option");
+      option.value = voice.voiceURI;
+      option.textContent = `${voice.name} (${voice.lang})`;
+      voiceSelect.appendChild(option);
     });
+
+    // After populating voices, set the selected voice
+    chrome.storage.sync.get("voiceURI", (data) => {
+      if (data.voiceURI) {
+        voiceSelect.value = data.voiceURI;
+      }
+    });
+  }
+
+  if (speechSynthesis.onvoiceschanged !== undefined) {
+    speechSynthesis.onvoiceschanged = setVoiceOptions;
   } else {
-    populateVoiceOptions(voices);
+    setVoiceOptions();
   }
 }
 

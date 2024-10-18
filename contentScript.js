@@ -3,6 +3,8 @@
 console.log("Dislexia content script loaded.");
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  console.log("Received message:", message);
+
   if (message.action === "readAloud") {
     readAloud(message.text);
     sendResponse({ status: "success" });
@@ -14,6 +16,9 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     } else {
       sendResponse({ error: "Please select text on the page to read." });
     }
+  } else if (message.action === "startSTT") {
+    startSTT();
+    sendResponse({ status: "success" });
   }
   // Return true to indicate we will send a response asynchronously
   return true;
@@ -138,73 +143,103 @@ function clearExistingHighlights() {
   });
 }
 
-
 // STT Functionality
 let recognition;
 let sttActive = false;
 
 function startSTT() {
+  console.log("startSTT() called");
+
   if (sttActive) {
+    console.log("STT is already active. Stopping STT.");
     stopSTT();
     return;
   }
 
   // Get the active element (should be an input or textarea)
   const activeElement = document.activeElement;
-  if (!activeElement.isContentEditable && !['INPUT', 'TEXTAREA'].includes(activeElement.tagName)) {
-    alert('Please focus on a text input field or editable element.');
+  console.log("Active element:", activeElement);
+
+  if (
+    !activeElement.isContentEditable &&
+    !["INPUT", "TEXTAREA"].includes(activeElement.tagName)
+  ) {
+    alert("Please focus on a text input field or editable element.");
     return;
   }
 
   // Get settings from storage
-  chrome.storage.sync.get(['sttLanguage', 'continuousSTT'], (data) => {
-    const language = data.sttLanguage || 'en-US';
+  chrome.storage.sync.get(["sttLanguage", "continuousSTT"], (data) => {
+    const language = data.sttLanguage || "en-US";
     const continuous = data.continuousSTT !== false;
+    console.log("STT Language:", language, "Continuous:", continuous);
 
-    recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+    const SpeechRecognition =
+      window.SpeechRecognition || window.webkitSpeechRecognition;
+
+    if (!SpeechRecognition) {
+      alert("Speech recognition is not supported in this browser.");
+      console.error("SpeechRecognition API not supported.");
+      return;
+    }
+
+    recognition = new SpeechRecognition();
     recognition.lang = language;
     recognition.interimResults = false;
     recognition.continuous = continuous;
 
     recognition.onstart = () => {
+      console.log("Speech recognition started");
       sttActive = true;
-      chrome.runtime.sendMessage({ type: 'stt-active' });
+      chrome.runtime.sendMessage({ type: "stt-active" });
     };
 
     recognition.onresult = (event) => {
+      console.log("Speech recognition result:", event.results);
       const transcript = Array.from(event.results)
-        .map(result => result[0].transcript)
-        .join(' ');
+        .map((result) => result[0].transcript)
+        .join(" ");
+
+      console.log("Transcribed text:", transcript);
 
       // Insert the transcribed text into the active element
       if (document.activeElement === activeElement) {
-        if (activeElement.tagName === 'INPUT' || activeElement.tagName === 'TEXTAREA') {
-          activeElement.value = (activeElement.value || '') + transcript + ' ';
+        if (
+          activeElement.tagName === "INPUT" ||
+          activeElement.tagName === "TEXTAREA"
+        ) {
+          activeElement.value = (activeElement.value || "") + transcript + " ";
         } else if (activeElement.isContentEditable) {
-          activeElement.innerHTML += transcript + ' ';
+          activeElement.innerHTML += transcript + " ";
         }
       } else {
-        alert('The focus has changed. Please activate STT again in the desired input field.');
+        alert(
+          "The focus has changed. Please activate STT again in the desired input field."
+        );
         stopSTT();
       }
     };
 
     recognition.onerror = (event) => {
-      console.error('Speech recognition error', event.error);
-      if (event.error === 'not-allowed' || event.error === 'denied') {
-        alert('Microphone access was denied. Please allow microphone access to use speech recognition.');
+      console.error("Speech recognition error:", event.error);
+      if (event.error === "not-allowed" || event.error === "denied") {
+        alert(
+          "Microphone access was denied. Please allow microphone access to use speech recognition."
+        );
       } else {
-        alert('An error occurred during speech recognition: ' + event.error);
+        alert("An error occurred during speech recognition: " + event.error);
       }
       stopSTT();
     };
 
     recognition.onend = () => {
+      console.log("Speech recognition ended");
       sttActive = false;
-      chrome.runtime.sendMessage({ type: 'stt-inactive' });
+      chrome.runtime.sendMessage({ type: "stt-inactive" });
     };
 
     recognition.start();
+    console.log("Speech recognition started with language:", language);
   });
 }
 
@@ -212,16 +247,6 @@ function stopSTT() {
   if (recognition && sttActive) {
     recognition.stop();
     sttActive = false;
-    chrome.runtime.sendMessage({ type: 'stt-inactive' });
+    chrome.runtime.sendMessage({ type: "stt-inactive" });
   }
 }
-
-// Message listener to handle STT activation
-chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-  if (message.action === 'startSTT') {
-    startSTT();
-    sendResponse({ status: 'success' });
-  }
-  // Other message handlers...
-  return true;
-});
