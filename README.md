@@ -28,17 +28,20 @@ A Chrome extension designed to assist users with dyslexia by providing Text-to-S
 ## Features
 
 - **Text-to-Speech (TTS):**
+
   - Reads selected text aloud.
   - Customizable voice settings (rate, pitch, volume).
   - Voice selection from available system voices.
   - Option to highlight text being read with customizable color and opacity.
 
 - **Speech-to-Text (STT):**
+
   - Transcribes spoken words into focused text input fields.
   - Language selection for speech recognition.
   - Option for continuous dictation.
 
 - **Context Menu Integration:**
+
   - Right-click options to quickly access TTS and STT functionalities.
 
 - **Visual Indicators:**
@@ -49,9 +52,11 @@ A Chrome extension designed to assist users with dyslexia by providing Text-to-S
 ## Installation
 
 1. **Download or Clone the Extension:**
+
    - Download the extension files or clone the repository to your local machine.
 
 2. **Load the Extension in Chrome:**
+
    - Open Chrome and navigate to `chrome://extensions/`.
    - Enable **Developer mode** by toggling the switch in the top right corner.
    - Click **Load unpacked** and select the extension's directory.
@@ -66,9 +71,11 @@ A Chrome extension designed to assist users with dyslexia by providing Text-to-S
 ### Text-to-Speech (TTS)
 
 1. **Select Text:**
+
    - Highlight the text you want to be read aloud on any webpage.
 
 2. **Use Context Menu:**
+
    - Right-click the selected text.
    - Choose **"Read This Aloud"** from the context menu.
 
@@ -80,6 +87,7 @@ A Chrome extension designed to assist users with dyslexia by providing Text-to-S
      - Click **"Read Text (TTS)"**.
 
 3. **Customization:**
+
    - In the extension popup, you can customize:
      - **Rate:** Speed of speech.
      - **Pitch:** Tone of speech.
@@ -93,9 +101,11 @@ A Chrome extension designed to assist users with dyslexia by providing Text-to-S
 ### Speech-to-Text (STT)
 
 1. **Focus on a Text Input Field:**
+
    - Click inside a text box or textarea where you want the transcribed text to appear.
 
 2. **Use Context Menu:**
+
    - Right-click within the focused text field.
    - Choose **"Speak to Text"** from the context menu.
 
@@ -107,15 +117,18 @@ A Chrome extension designed to assist users with dyslexia by providing Text-to-S
      - Click **"Start Speech Recognition (STT)"**.
 
 3. **Begin Speaking:**
+
    - Speak into your microphone.
    - The extension will transcribe your speech into the text field.
 
 4. **Customization:**
+
    - In the extension popup, you can customize:
      - **Language:** Select the language for speech recognition.
      - **Continuous Dictation:** Enable or disable continuous listening.
 
 5. **Visual Indicators:**
+
    - The extension icon and badge will change to indicate when STT is active.
 
 6. **Stopping STT:**
@@ -215,15 +228,19 @@ Located in the `icons` folder.
 ### Common Issues
 
 1. **Extension Not Working After Installation:**
+
    - **Solution:** Ensure all files are correctly placed and the extension is loaded via `chrome://extensions/`.
 
 2. **TTS Not Speaking:**
+
    - **Solution:** Check if the volume is turned up and the correct voice is selected. Ensure the selected voice is available on your system.
 
 3. **STT Not Transcribing:**
+
    - **Solution:** Ensure microphone permissions are granted. Check if the browser supports the Speech Recognition API.
 
 4. **Settings Not Saving:**
+
    - **Solution:** Verify that `"storage"` permission is included in `manifest.json`. Check for errors in the console when saving settings.
 
 5. **Context Menu Items Not Appearing:**
@@ -232,19 +249,24 @@ Located in the `icons` folder.
 ### Debugging Steps
 
 1. **Check Console for Errors:**
+
    - Open developer tools (`F12` or `Ctrl+Shift+I`) on the webpage or extension popup.
    - Look for errors or warnings in the **Console** tab.
 
 2. **Verify Permissions:**
+
    - Ensure all necessary permissions are declared in `manifest.json`.
 
 3. **Reload the Extension:**
+
    - Go to `chrome://extensions/` and click **Reload** under your extension.
 
 4. **Test on Different Websites:**
+
    - Some sites may block content scripts. Try the extension on another site.
 
 5. **Microphone and Speaker Permissions:**
+
    - Check browser settings to ensure the site and extension have access to the microphone and speakers.
 
 6. **Check for Conflicting Extensions:**
@@ -257,12 +279,15 @@ Located in the `icons` folder.
 Contributions are welcome! If you'd like to improve this extension or report issues:
 
 1. **Fork the Repository:**
+
    - Create your own fork of the project.
 
 2. **Make Changes:**
+
    - Implement your changes or fixes.
 
 3. **Test Thoroughly:**
+
    - Ensure all features work as expected and there are no new bugs.
 
 4. **Submit a Pull Request:**
@@ -329,14 +354,17 @@ Contains all icon images used by the extension.
 ### 1. TTS Is Not Working
 
 - **Check for Console Errors:**
+
   - Open the developer console on the webpage.
   - Look for errors related to `speechSynthesis` or `TTS`.
 
 - **Verify Voice Availability:**
+
   - Ensure the selected voice is installed on your system.
   - Try selecting a different voice in the extension popup.
 
 - **Check Volume Settings:**
+
   - Ensure the volume slider is not set to zero.
   - Verify your system's audio output is functioning.
 
@@ -346,14 +374,17 @@ Contains all icon images used by the extension.
 ### 2. STT Is Not Working
 
 - **Check Microphone Permissions:**
+
   - Ensure the browser has permission to access the microphone.
   - You may need to grant permissions in the browser settings.
 
 - **Verify Browser Compatibility:**
+
   - The Speech Recognition API is primarily supported in Chrome.
   - Ensure you are using a compatible browser.
 
 - **Check Language Settings:**
+
   - Ensure the correct language is selected in the extension popup.
   - Try using a language that you are certain is supported.
 
@@ -363,12 +394,15 @@ Contains all icon images used by the extension.
 ### 3. Settings Are Not Saving
 
 - **Check `manifest.json` for Permissions:**
+
   - Ensure `"storage"` is included in the permissions array.
 
 - **Verify Event Listeners:**
+
   - Make sure that event listeners for settings controls are correctly set up to call `saveSettings`.
 
 - **Inspect `saveSettings` and `loadSettings` Functions:**
+
   - Add `console.log()` statements to confirm they are being called.
   - Ensure settings are correctly saved and retrieved from `chrome.storage.sync`.
 
@@ -378,9 +412,11 @@ Contains all icon images used by the extension.
 ### 4. Context Menu Items Missing
 
 - **Reload the Extension:**
+
   - Sometimes context menus require a reload to appear.
 
 - **Check Permissions:**
+
   - Ensure `"contextMenus"` is included in `manifest.json`.
 
 - **Inspect `background.js`:**
@@ -389,6 +425,7 @@ Contains all icon images used by the extension.
 ### 5. Extension Icon Not Updating During STT
 
 - **Check Icon File Paths:**
+
   - Ensure that `icon-stt-active.png` exists in the `icons` directory.
 
 - **Verify `background.js` Message Handling:**
@@ -401,7 +438,7 @@ Contains all icon images used by the extension.
 If you continue to experience issues or have questions:
 
 - **Email:** ceoturobov@gmail.com
-- **Issue Tracker:** [GitHub Issues](https://github.com/yourusername/dislexia-extension/issues)
+- **Issue Tracker:** [GitHub Issues](https://github.com/Muyinjon/Dislexia/issues)
 
 ---
 
