@@ -24,7 +24,9 @@ button {
 }
 
 #controls input[type="range"],
-#controls select {
+#controls select,
+#controls input[type="color"],
+#controls input[type="checkbox"] {
   width: 100%;
 }
 
@@ -35,6 +37,7 @@ button {
   overflow-y: auto;
   margin-top: 10px;
 }
-.current-word {
-  background-color: yellow;
+
+.dislexia-highlight {
+  /* The background color is set inline based on user selection */
 }

@@ -21,20 +21,46 @@ document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("pitch").addEventListener("input", saveSettings);
   document.getElementById("volume").addEventListener("input", saveSettings);
   document.getElementById("voice").addEventListener("change", saveSettings);
+  document
+    .getElementById("highlight-color")
+    .addEventListener("input", saveSettings);
+  document
+    .getElementById("highlight-opacity")
+    .addEventListener("input", saveSettings);
+  document
+    .getElementById("enable-highlight")
+    .addEventListener("change", saveSettings);
+
+  populateVoiceList();
 });
 
 // Load settings from chrome.storage
 function loadSettings() {
-  populateVoiceList();
-
-  chrome.storage.sync.get(["rate", "pitch", "volume", "voiceURI"], (data) => {
-    document.getElementById("rate").value = data.rate || 1;
-    document.getElementById("pitch").value = data.pitch || 1;
-    document.getElementById("volume").value = data.volume || 1;
-    if (data.voiceURI) {
-      document.getElementById("voice").value = data.voiceURI;
+  chrome.storage.sync.get(
+    [
+      "rate",
+      "pitch",
+      "volume",
+      "voiceURI",
+      "highlightColor",
+      "highlightOpacity",
+      "enableHighlight",
+    ],
+    (data) => {
+      document.getElementById("rate").value = data.rate || 1;
+      document.getElementById("pitch").value = data.pitch || 1;
+      document.getElementById("volume").value = data.volume || 1;
+      document.getElementById("highlight-color").value =
+        data.highlightColor || "#FFFF00";
+      document.getElementById("highlight-opacity").value =
+        data.highlightOpacity !== undefined ? data.highlightOpacity : 1;
+      document.getElementById("enable-highlight").checked =
+        data.enableHighlight !== false; // Default to true
+      if (data.voiceURI) {
+        document.getElementById("voice").value = data.voiceURI;
+      }
     }
-  });
+  );
 }
 
 // Save settings to chrome.storage
@@ -43,8 +69,19 @@ function saveSettings() {
   const pitch = document.getElementById("pitch").value;
   const volume = document.getElementById("volume").value;
   const voiceURI = document.getElementById("voice").value;
+  const highlightColor = document.getElementById("highlight-color").value;
+  const highlightOpacity = document.getElementById("highlight-opacity").value;
+  const enableHighlight = document.getElementById("enable-highlight").checked;
 
-  chrome.storage.sync.set({ rate, pitch, volume, voiceURI });
+  chrome.storage.sync.set({
+    rate,
+    pitch,
+    volume,
+    voiceURI,
+    highlightColor,
+    highlightOpacity,
+    enableHighlight,
+  });
 }
 
 // Populate voice list
@@ -77,13 +114,14 @@ function populateVoiceOptions(voices) {
 // Read selected text on the page
 function readSelectedText() {
   chrome.tabs.query({ active: true, currentWindow: true }, ([tab]) => {
+    // Send a message to the content script to read the selected text
     chrome.tabs.sendMessage(
       tab.id,
       { action: "readSelectedText" },
       (response) => {
         if (chrome.runtime.lastError) {
           console.error(chrome.runtime.lastError);
-          // Inject the content script
+          // Inject content script
           chrome.scripting.executeScript(
             {
               target: { tabId: tab.id },
@@ -92,7 +130,7 @@ function readSelectedText() {
             () => {
               if (chrome.runtime.lastError) {
                 console.error(chrome.runtime.lastError);
-                // Show a notification
+                // Notify the user
                 chrome.notifications.create({
                   type: "basic",
                   iconUrl: "icons/icon48.png",

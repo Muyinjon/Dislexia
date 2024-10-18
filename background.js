@@ -1,6 +1,5 @@
 // background.js
 
-// Create context menu item when the extension is installed or updated
 chrome.runtime.onInstalled.addListener(() => {
   chrome.contextMenus.create({
     id: "read-aloud",
@@ -9,7 +8,6 @@ chrome.runtime.onInstalled.addListener(() => {
   });
 });
 
-// Add a listener for clicks on the context menu item
 chrome.contextMenus.onClicked.addListener((info, tab) => {
   if (info.menuItemId === "read-aloud" && info.selectionText) {
     chrome.tabs.sendMessage(
@@ -18,7 +16,7 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
       (response) => {
         if (chrome.runtime.lastError) {
           console.error(chrome.runtime.lastError);
-          // Inject the content script
+          // Inject content script
           chrome.scripting.executeScript(
             {
               target: { tabId: tab.id },
@@ -27,7 +25,7 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
             () => {
               if (chrome.runtime.lastError) {
                 console.error(chrome.runtime.lastError);
-                // Show a notification
+                // Notify the user
                 chrome.notifications.create({
                   type: "basic",
                   iconUrl: "icons/icon48.png",
@@ -50,7 +48,6 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
   }
 });
 
-// Listen for messages from content scripts or other parts of the extension
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.type === "tts-start") {
     chrome.notifications.create("tts-start", {
