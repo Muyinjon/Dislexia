@@ -1,19 +1,72 @@
 /* styles.css */
+.indie-flower-regular {
+  font-family: "Indie Flower", cursive;
+  font-weight: 400;
+  font-style: normal;
+}
 
 body {
-  font-family: Arial, sans-serif;
+  background: #fdfde7;
+  background-image: url("https://www.transparenttextures.com/patterns/paper-fibers.png");
+  font-family: "Comic Sans MS", cursive, sans-serif;
+  color: #333;
+  margin: 0;
   padding: 10px;
-  width: 300px;
+  width: 350px;
+}
+.btn-div {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
 }
 
 h1 {
   text-align: center;
+  font-size: 2.8em;
+  margin: 0;
 }
 
+/* CSS */
 button {
-  width: 100%;
-  padding: 10px;
-  margin: 5px 0;
+  align-self: center;
+  background-color: #fff;
+  background-image: none;
+  background-position: 0 90%;
+  background-repeat: repeat no-repeat;
+  background-size: 4px 3px;
+  font-family: "Comic Sans MS", cursive, sans-serif;
+  font-size: 1.2em;
+
+  box-sizing: border-box;
+  color: #41403e;
+  cursor: pointer;
+  display: inline-block;
+  font-size: 1rem;
+  line-height: 23px;
+  outline: none;
+  padding: 0.75rem;
+  text-decoration: none;
+  transition: all 235ms ease-in-out;
+  border-radius: 15px 225px 255px 15px 15px 255px 225px 15px;
+  border-style: solid;
+  border-width: 2px;
+  box-shadow: rgba(0, 0, 0, 0.2) 15px 28px 25px -18px;
+  border-bottom-left-radius: 15px 255px;
+  border-bottom-right-radius: 225px 15px;
+  border-top-left-radius: 255px 15px;
+  border-top-right-radius: 15px 225px;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
+}
+
+button:hover {
+  box-shadow: rgba(0, 0, 0, 0.3) 2px 8px 8px -5px;
+  transform: translate3d(0, 2px, 0);
+}
+
+button:focus {
+  box-shadow: rgba(0, 0, 0, 0.3) 2px 8px 4px -6px;
 }
 
 #controls {
@@ -23,23 +76,195 @@ button {
 #controls label {
   display: block;
   margin-top: 5px;
+  font-size: 1.4em;
 }
 
 #controls input[type="range"],
-#controls select,
-#controls input[type="color"],
-#controls input[type="checkbox"] {
+#controls select {
   width: 100%;
+}
+/* Sketchy Checkbox */
+input[type="checkbox"] {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  background: #fafafa;
+  border: 2px solid black;
+  border-radius: 4px;
+  position: relative;
+  cursor: pointer;
+  box-shadow: 2px 2px 0px #000;
+}
+
+input[type="checkbox"]:checked::after {
+  content: "\2714";
+  font-size: 30px;
+  position: absolute;
+  top: -16px;
+  left: 0px;
+  color: black;
 }
 
 #result {
+  display: flex;
+  justify-content: center;
   border: 1px solid #ccc;
   padding: 10px;
   min-height: 100px;
   overflow-y: auto;
-  margin-top: 10px;
+  align-self: center;
+  background-color: #fff;
+  background-image: none;
+  background-position: 0 90%;
+  background-repeat: repeat no-repeat;
+  background-size: 4px 3px;
+  width: 100%;
+  border: #000000;
+  box-sizing: border-box;
+  color: #000000;
+  display: inline-block;
+  font-size: 1.2em;
+  line-height: 23px;
+  outline: none;
+  padding: 0.75rem;
+  text-decoration: none;
+  transition: all 235ms ease-in-out;
+  border-radius: 15px 225px 255px 15px 15px 255px 225px 15px;
+  border-style: solid;
+  border-width: 2px;
+  box-shadow: rgba(0, 0, 0, 0.248) 15px 28px 25px -18px;
+  border-bottom-left-radius: 15px 255px;
+  border-bottom-right-radius: 225px 15px;
+  border-top-left-radius: 255px 15px;
+  border-top-right-radius: 15px 225px;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
 }
 
 .dislexia-highlight {
   /* The background color is set inline based on user selection */
+}
+
+/* Sketchy Range Input CSS */
+input[type="range"] {
+  -webkit-appearance: none;
+  width: 100%;
+  height: 10px;
+  background: transparent;
+}
+
+input[type="range"]::-webkit-slider-runnable-track {
+  height: 10px;
+  background: white;
+  border: 1px solid black;
+  border-radius: 10px;
+  box-shadow: 0px 0px 0px 1px black;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 18px;
+  width: 18px;
+  background: #f4f4f4;
+  border: 2px solid black;
+  border-radius: 50%;
+  box-shadow: rgba(0, 0, 0, 0.2) 15px 28px 25px -18px;
+  cursor: pointer;
+  transition: all 0.1s ease-in-out;
+  transform: translateY(-4px);
+}
+
+input[type="range"]::-moz-range-thumb {
+  background: #f4f4f4;
+  border: 2px solid black;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: all 0.1s ease-in-out;
+  transform: translateY(-4px);
+}
+
+/* Sketchy Select Box */
+select {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  background: #fafafa;
+  border: 1px solid #ccc;
+  padding: 10px;
+  overflow-y: auto;
+  margin-top: 5px;
+  align-self: center;
+  background-color: #fff;
+  background-image: none;
+  background-position: 0 90%;
+  background-repeat: repeat no-repeat;
+  background-size: 4px 3px;
+  width: 100%;
+  border: #000000;
+  box-sizing: border-box;
+  color: #000000;
+  display: inline-block;
+  font-size: 1.2em;
+  line-height: 23px;
+  outline: none;
+  padding: 0.75rem;
+  text-decoration: none;
+  transition: all 235ms ease-in-out;
+  border-radius: 15px 225px 255px 15px 15px 255px 225px 15px;
+  border-style: solid;
+  border-width: 2px;
+  box-shadow: rgba(0, 0, 0, 0.248) 15px 28px 25px -18px;
+  border-bottom-left-radius: 15px 255px;
+  border-bottom-right-radius: 225px 15px;
+  border-top-left-radius: 255px 15px;
+  border-top-right-radius: 15px 225px;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
+  font-family: "Comic Sans MS", cursive, sans-serif;
+  font-size: 1.2em;
+  cursor: pointer;
+  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 140 140"><polygon points="70,98 100,58 40,58" fill="black"/></svg>');
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  background-size: 10px;
+}
+
+select:focus {
+  outline: none;
+  box-shadow: 2px 2px 0px #000, 0 0 5px #000;
+}
+
+/* Sketchy Color Input */
+input[type="color"] {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 25px;
+  height: 25px;
+  border: 2px solid black;
+  border-radius: 50%;
+  cursor: pointer;
+  box-shadow: 2px 2px 0px #000;
+  transition: all 0.1s ease-in-out;
+}
+
+input[type="color"]::-webkit-color-swatch-wrapper {
+  padding: 0;
+}
+
+input[type="color"]::-webkit-color-swatch {
+  border: none;
+  border-radius: 50%;
+}
+
+/* div highlight-div */
+.highlight-div,
+.language {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin: 10px 0;
 }

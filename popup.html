@@ -3,12 +3,19 @@
   <head>
     <title>Dislexia</title>
     <link rel="stylesheet" href="styles.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Indie+Flower&display=swap"
+      rel="stylesheet"
+    />
   </head>
   <body>
-    <h1>Dislexia</h1>
-
-    <button id="read-text-btn">Read Text (TTS)</button>
-    <button id="start-stt-btn">Start Speech Recognition (STT)</button>
+    <h1 class="indie-flower-regular">Dislexia</h1>
+    <div class="btn-div">
+      <button id="read-text-btn">Read Text (TTS)</button>
+      <button id="start-stt-btn">Start Speech Recognition (STT)</button>
+    </div>
 
     <div id="controls">
       <label for="rate">Rate:</label>
@@ -23,9 +30,13 @@
       <label for="voice">Voice:</label>
       <select id="voice"></select>
 
-      <label for="highlight-color">Highlight Color:</label>
-      <input type="color" id="highlight-color" value="#FFFF00" />
-
+      <!-- Enable Highlighting Checkbox -->
+      <div class="highlight-div">
+        <label for="enable-highlight">Enable Highlighting:</label>
+        <input type="checkbox" id="enable-highlight" checked />
+        <label for="highlight-color">Highlight Color:</label>
+        <input type="color" id="highlight-color" value="#FFFF00" />
+      </div>
       <label for="highlight-opacity">Highlight Opacity:</label>
       <input
         type="range"
@@ -36,18 +47,16 @@
         step="0.05"
       />
 
-      <label for="enable-highlight">Enable Highlighting:</label>
-      <input type="checkbox" id="enable-highlight" checked />
-
       <!-- STT Language Selector -->
       <label for="stt-language">STT Language:</label>
       <select id="stt-language">
         <!-- Options will be populated dynamically in popup.js -->
       </select>
-
-      <!-- Continuous Dictation Toggle -->
-      <label for="continuous-stt">Continuous Dictation:</label>
-      <input type="checkbox" id="continuous-stt" checked />
+      <div class="language">
+        <!-- Continuous Dictation Toggle -->
+        <label for="continuous-stt">Continuous Dictation:</label>
+        <input type="checkbox" id="continuous-stt" checked />
+      </div>
     </div>
 
     <div id="result" contenteditable="true"></div>
