@@ -17,7 +17,7 @@ document.addEventListener("DOMContentLoaded", () => {
     .addEventListener("click", toggleRecognition);
   document
     .getElementById("stop-tts-btn")
-    .addEventListener("click", stopReadingAloud); // New Stop Button Listener
+    .addEventListener("click", stopReadingAloud);
 
   // Save settings when they change
   document.getElementById("rate").addEventListener("input", saveSettings);
@@ -85,6 +85,17 @@ function loadSettings() {
     }
   );
 }
+
+// Listener for messages from content script
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  if (message.type === "tts-start") {
+    // Show the stop button when TTS starts
+    document.getElementById("stop-tts-btn").style.display = "inline-block";
+  } else if (message.type === "tts-end") {
+    // Hide the stop button when TTS ends
+    document.getElementById("stop-tts-btn").style.display = "none";
+  }
+});
 
 // Save settings to chrome.storage
 function saveSettings() {
@@ -216,6 +227,10 @@ function readSelectedText() {
           );
         } else if (response && response.error) {
           alert(response.error);
+        } else {
+          // Show the stop button when TTS starts
+          document.getElementById("stop-tts-btn").style.display =
+            "inline-block";
         }
       }
     );
@@ -229,6 +244,9 @@ function stopReadingAloud() {
     chrome.tabs.sendMessage(tab.id, { action: "stopTTS" }, (response) => {
       if (chrome.runtime.lastError) {
         console.error(chrome.runtime.lastError);
+      } else {
+        // Hide the stop button once TTS stops
+        document.getElementById("stop-tts-btn").style.display = "none";
       }
     });
   });
@@ -253,7 +271,7 @@ function startRecognition() {
   recognition.onstart = () => {
     recognizing = true;
     document.getElementById("start-stt-btn").textContent =
-      "Stop Speech Recognition (STT)";
+      "Stop Speech Recognition";
   };
 
   recognition.onresult = (event) => {
@@ -275,7 +293,7 @@ function startRecognition() {
   recognition.onend = () => {
     recognizing = false;
     document.getElementById("start-stt-btn").textContent =
-      "Start Speech Recognition (STT)";
+      "Start Speech Recognition";
   };
 
   recognition.start();
@@ -285,5 +303,5 @@ function stopRecognition() {
   recognition.stop();
   recognizing = false;
   document.getElementById("start-stt-btn").textContent =
-    "Start Speech Recognition (STT)";
+    "Start Speech Recognition";
 }
