@@ -19,13 +19,20 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   } else if (message.action === "startSTT") {
     startSTT();
     sendResponse({ status: "success" });
+  } else if (message.action === "stopTTS") {
+    stopReadingAloud();
+    sendResponse({ status: "success" });
   }
-  // Return true to indicate we will send a response asynchronously
   return true;
 });
 
 // Function to read aloud the text
 function readAloud(selectedText) {
+  // Cancel any ongoing speech
+  if (speechSynthesis.speaking) {
+    speechSynthesis.cancel();
+  }
+
   chrome.storage.sync.get(
     [
       "rate",
@@ -77,6 +84,15 @@ function readAloud(selectedText) {
       speechSynthesis.speak(utterance);
     }
   );
+}
+
+// Function to stop any ongoing speech
+function stopReadingAloud() {
+  if (speechSynthesis.speaking) {
+    speechSynthesis.cancel();
+    // Notify that TTS has ended
+    chrome.runtime.sendMessage({ type: "tts-end" });
+  }
 }
 
 // Function to highlight the selected text

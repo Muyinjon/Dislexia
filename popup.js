@@ -8,13 +8,16 @@ let recognition;
 document.addEventListener("DOMContentLoaded", () => {
   loadSettings();
 
-  // Event listeners
+  // Event listeners for TTS and STT buttons
   document
     .getElementById("read-text-btn")
     .addEventListener("click", readSelectedText);
   document
     .getElementById("start-stt-btn")
     .addEventListener("click", toggleRecognition);
+  document
+    .getElementById("stop-tts-btn")
+    .addEventListener("click", stopReadingAloud); // New Stop Button Listener
 
   // Save settings when they change
   document.getElementById("rate").addEventListener("input", saveSettings);
@@ -37,8 +40,7 @@ document.addEventListener("DOMContentLoaded", () => {
     .getElementById("continuous-stt")
     .addEventListener("change", saveSettings);
 
-  // Populate the language list
-
+  // Populate the language and voice lists
   populateVoiceList();
   populateLanguageList();
 
@@ -182,14 +184,12 @@ function populateLanguageList() {
 // Read selected text on the page
 function readSelectedText() {
   chrome.tabs.query({ active: true, currentWindow: true }, ([tab]) => {
-    // Send a message to the content script to read the selected text
     chrome.tabs.sendMessage(
       tab.id,
       { action: "readSelectedText" },
       (response) => {
         if (chrome.runtime.lastError) {
-          console.error(chrome.runtime.lastError);
-          // Inject content script
+          // Inject content script if not present
           chrome.scripting.executeScript(
             {
               target: { tabId: tab.id },
@@ -208,15 +208,9 @@ function readSelectedText() {
                 });
               } else {
                 // Retry sending the message
-                chrome.tabs.sendMessage(
-                  tab.id,
-                  { action: "readSelectedText" },
-                  (response) => {
-                    if (response && response.error) {
-                      alert(response.error);
-                    }
-                  }
-                );
+                chrome.tabs.sendMessage(tab.id, {
+                  action: "readSelectedText",
+                });
               }
             }
           );
@@ -225,6 +219,18 @@ function readSelectedText() {
         }
       }
     );
+  });
+}
+
+// Function to stop reading aloud
+function stopReadingAloud() {
+  chrome.tabs.query({ active: true, currentWindow: true }, ([tab]) => {
+    // Send a message to the content script to stop reading aloud
+    chrome.tabs.sendMessage(tab.id, { action: "stopTTS" }, (response) => {
+      if (chrome.runtime.lastError) {
+        console.error(chrome.runtime.lastError);
+      }
+    });
   });
 }
 
