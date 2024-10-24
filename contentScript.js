@@ -224,6 +224,8 @@ function startSTT() {
         transcript = transcript
           .replace(/\bcomma\b/gi, ",")
           .replace(/\bperiod\b/gi, ".")
+          .replace(/\bdot\b/gi, ".")
+          .replace(/\bdots\b/gi, "...")
           .replace(/\bquestion mark\b/gi, "?")
           .replace(/\bexclamation mark\b/gi, "!")
           .replace(/\bsemicolon\b/gi, ";")

@@ -51,6 +51,8 @@ Supported Punctuation Commands:
 
 - **"comma"**: Adds a comma `,`
 - **"period"**: Adds a period `.`
+- **"dot"**: Adds a period `.`
+- **"dots"**: Adds a ellipsis `...`
 - **"question mark"**: Adds a question mark `?`
 - **"exclamation mark"**: Adds an exclamation mark `!`
 - **"semicolon"**: Adds a semicolon `;`
