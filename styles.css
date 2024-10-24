@@ -1,4 +1,9 @@
 /* styles.css */
+html,
+body {
+  overflow: hidden;
+}
+
 .indie-flower-regular {
   font-family: "Indie Flower", cursive;
   font-weight: 400;
@@ -22,7 +27,7 @@ body {
 
 h1 {
   text-align: center;
-  font-size: 2.8em;
+  font-size: 2.2em;
   margin: 0;
 }
 
@@ -36,12 +41,10 @@ button {
   background-size: 4px 3px;
   font-family: "Comic Sans MS", cursive, sans-serif;
   font-size: 1.2em;
-
   box-sizing: border-box;
   color: #41403e;
   cursor: pointer;
   display: inline-block;
-  font-size: 1rem;
   line-height: 23px;
   outline: none;
   padding: 0.75rem;
@@ -76,7 +79,7 @@ button:focus {
 #controls label {
   display: block;
   margin-top: 5px;
-  font-size: 1.4em;
+  font-size: 1em;
 }
 
 #controls input[type="range"],
@@ -111,7 +114,7 @@ input[type="checkbox"]:checked::after {
   justify-content: center;
   border: 1px solid #ccc;
   padding: 10px;
-  min-height: 100px;
+  min-height: 50px;
   overflow-y: auto;
   align-self: center;
   background-color: #fff;
@@ -124,7 +127,7 @@ input[type="checkbox"]:checked::after {
   box-sizing: border-box;
   color: #000000;
   display: inline-block;
-  font-size: 1.2em;
+  font-size: 1em;
   line-height: 23px;
   outline: none;
   padding: 0.75rem;
@@ -267,4 +270,9 @@ input[type="color"]::-webkit-color-swatch {
   justify-content: center;
   gap: 10px;
   margin: 10px 0;
+}
+
+.Report {
+  font-family: "Comic Sans MS", cursive, sans-serif;
+  text-align: center;
 }
