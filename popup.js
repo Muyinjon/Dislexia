@@ -3,6 +3,8 @@
 // Initialize variables
 let recognizing = false;
 let recognition;
+let finalTranscript = ""; // Stores the final transcript to prevent re-writing
+let lastResultIndex = 0; // Keep track of the last processed result index
 
 // Load settings when the popup is opened
 document.addEventListener("DOMContentLoaded", () => {
@@ -264,19 +266,32 @@ function toggleRecognition() {
 function startRecognition() {
   recognition = new (window.SpeechRecognition ||
     window.webkitSpeechRecognition)();
-  recognition.lang = "en-US"; // Set language
-  recognition.interimResults = false;
-  recognition.maxAlternatives = 1;
+  recognition.lang = "en-US"; // Set the language
+  recognition.interimResults = true; // Enable interim results for real-time feedback
+  recognition.continuous = true; // Keep the recognition running continuously
 
   recognition.onstart = () => {
     recognizing = true;
     document.getElementById("start-stt-btn").textContent =
-      "Stop Speech Recognition";
+      "Stop Speech Recognition (STT)";
   };
 
   recognition.onresult = (event) => {
-    const transcript = event.results[0][0].transcript;
-    document.getElementById("result").textContent += transcript + " ";
+    let interimTranscript = ""; // Store the interim results
+
+    // Iterate through the recognition results starting from the last processed index
+    for (let i = lastResultIndex; i < event.results.length; ++i) {
+      if (event.results[i].isFinal) {
+        finalTranscript += event.results[i][0].transcript + " ";
+        lastResultIndex = i + 1; // Update the last result index to avoid reprocessing
+      } else {
+        interimTranscript += event.results[i][0].transcript + " ";
+      }
+    }
+
+    // Update the result display area with both final and interim transcripts
+    document.getElementById("result").textContent =
+      finalTranscript + interimTranscript;
   };
 
   recognition.onerror = (event) => {
@@ -293,15 +308,17 @@ function startRecognition() {
   recognition.onend = () => {
     recognizing = false;
     document.getElementById("start-stt-btn").textContent =
-      "Start Speech Recognition";
+      "Start Speech Recognition (STT)";
   };
 
   recognition.start();
 }
 
 function stopRecognition() {
-  recognition.stop();
-  recognizing = false;
-  document.getElementById("start-stt-btn").textContent =
-    "Start Speech Recognition";
+  if (recognition) {
+    recognition.stop();
+    recognizing = false;
+    document.getElementById("start-stt-btn").textContent =
+      "Start Speech Recognition (STT)";
+  }
 }

@@ -23,7 +23,7 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
       { action: "readAloud", text: info.selectionText },
       (response) => {
         if (chrome.runtime.lastError) {
-          console.error(chrome.runtime.lastError);
+          console.error("Error:", JSON.stringify(chrome.runtime.lastError));
           // Inject content script if not present
           chrome.scripting.executeScript(
             {
@@ -32,7 +32,10 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
             },
             () => {
               if (chrome.runtime.lastError) {
-                console.error(chrome.runtime.lastError);
+                console.error(
+                  "Failed to inject content script:",
+                  JSON.stringify(chrome.runtime.lastError)
+                );
                 // Notify the user
                 chrome.notifications.create({
                   type: "basic",
@@ -57,7 +60,7 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
     // Handle "Speak to Text" action
     chrome.tabs.sendMessage(tab.id, { action: "startSTT" }, (response) => {
       if (chrome.runtime.lastError) {
-        console.error(chrome.runtime.lastError);
+        console.error("Error:", JSON.stringify(chrome.runtime.lastError));
         // Inject content script if not present
         chrome.scripting.executeScript(
           {
@@ -66,7 +69,10 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
           },
           () => {
             if (chrome.runtime.lastError) {
-              console.error(chrome.runtime.lastError);
+              console.error(
+                "Failed to inject content script:",
+                JSON.stringify(chrome.runtime.lastError)
+              );
               // Notify the user
               chrome.notifications.create({
                 type: "basic",

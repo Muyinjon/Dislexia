@@ -162,6 +162,8 @@ function clearExistingHighlights() {
 // STT Functionality
 let recognition;
 let sttActive = false;
+let finalTranscript = ""; // Stores the final recognized transcript
+let lastResultIndex = 0; // Keep track of the last processed result index
 
 function startSTT() {
   console.log("startSTT() called");
@@ -201,7 +203,7 @@ function startSTT() {
 
     recognition = new SpeechRecognition();
     recognition.lang = language;
-    recognition.interimResults = false;
+    recognition.interimResults = true;
     recognition.continuous = continuous;
 
     recognition.onstart = () => {
@@ -212,11 +214,18 @@ function startSTT() {
 
     recognition.onresult = (event) => {
       console.log("Speech recognition result:", event.results);
-      const transcript = Array.from(event.results)
-        .map((result) => result[0].transcript)
-        .join(" ");
+      let interimTranscript = "";
 
-      console.log("Transcribed text:", transcript);
+      for (let i = lastResultIndex; i < event.results.length; ++i) {
+        if (event.results[i].isFinal) {
+          finalTranscript += event.results[i][0].transcript + " ";
+          lastResultIndex = i + 1; // Update the last result index to avoid reprocessing
+        } else {
+          interimTranscript += event.results[i][0].transcript + " ";
+        }
+      }
+
+      console.log("Transcribed text:", finalTranscript + interimTranscript);
 
       // Insert the transcribed text into the active element
       if (document.activeElement === activeElement) {
@@ -224,9 +233,9 @@ function startSTT() {
           activeElement.tagName === "INPUT" ||
           activeElement.tagName === "TEXTAREA"
         ) {
-          activeElement.value = (activeElement.value || "") + transcript + " ";
+          activeElement.value = finalTranscript + interimTranscript;
         } else if (activeElement.isContentEditable) {
-          activeElement.innerHTML += transcript + " ";
+          activeElement.innerHTML = finalTranscript + interimTranscript;
         }
       } else {
         alert(
@@ -251,6 +260,7 @@ function startSTT() {
     recognition.onend = () => {
       console.log("Speech recognition ended");
       sttActive = false;
+      lastResultIndex = 0; // Reset lastResultIndex for the next session
       chrome.runtime.sendMessage({ type: "stt-inactive" });
     };
 
@@ -266,3 +276,14 @@ function stopSTT() {
     chrome.runtime.sendMessage({ type: "stt-inactive" });
   }
 }
+
+// Add an event listener to capture the focused element when the STT button is clicked
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  if (message.action === "startSTT") {
+    startSTT();
+    sendResponse({ status: "success" });
+  } else if (message.action === "stopSTT") {
+    stopSTT();
+    sendResponse({ status: "success" });
+  }
+});
