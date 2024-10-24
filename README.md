@@ -6,6 +6,7 @@ A Chrome extension designed to assist users with dyslexia by providing Text-to-S
 
 - [Features](#features)
 - [Installation](#installation)
+- [Punctuation Handling](#punctuation-handling)
 - [Usage](#usage)
   - [Text-to-Speech (TTS)](#text-to-speech-tts)
   - [Speech-to-Text (STT)](#speech-to-text-stt)
@@ -40,6 +41,51 @@ A Chrome extension designed to assist users with dyslexia by providing Text-to-S
   - Language selection for speech recognition.
   - Option for continuous dictation.
 
+  ### Punctuation Handling
+
+  **Supported Punctuation Commands:**
+  **Speech-to-Text Punctuation Rules**
+  This extension allows you to use voice commands to dictate text into any input or textarea on a webpage. You can also include punctuation by using specific phrases during speech recognition.
+
+Supported Punctuation Commands:
+
+- **"comma"**: Adds a comma `,`
+- **"period"**: Adds a period `.`
+- **"question mark"**: Adds a question mark `?`
+- **"exclamation mark"**: Adds an exclamation mark `!`
+- **"semicolon"**: Adds a semicolon `;`
+- **"colon"**: Adds a colon `:`
+- **"open parenthesis"**: Adds an open parenthesis `(`
+- **"close parenthesis"**: Adds a close parenthesis `)`
+- **"dash"**: Adds a dash `-`
+- **"hyphen"**: Adds a hyphen `-`
+- **"quote"**: Adds a double quote `"`
+- **"single quote"**: Adds a single quote `'`
+- **"open bracket"**: Adds an open bracket `[`
+- **"close bracket"**: Adds a close bracket `]`
+- **"open brace"**: Adds an open brace `{`
+- **"close brace"**: Adds a close brace `}`
+- **"ellipsis"**: Adds an ellipsis `...`
+- **"forward slash"**: Adds a forward slash `/`
+- **"backslash"**: Adds a backslash `\\`
+- **"greater than"**: Adds a greater-than sign `>`
+- **"less than"**: Adds a less-than sign `<`
+- **"ampersand"**: Adds an ampersand `&`
+- **"at sign"**: Adds an at symbol `@`
+- **"dollar sign"**: Adds a dollar sign `$`
+- **"percent sign"**: Adds a percent symbol `%`
+- **"number sign"**: Adds a number symbol `#`
+- **"star"**: Adds a star `*`
+- **"plus sign"**: Adds a plus sign `+`
+- **"equal sign"**: Adds an equal sign `=`
+- **"underscore"**: Adds an underscore `_`
+- **"vertical bar"**: Adds a vertical bar `|`
+- **"caret"**: Adds a caret `^`
+- **"tilde"**: Adds a tilde `~`
+- **"grave accent"**: Adds a grave accent `` ` ``
+
+---
+
 - **Context Menu Integration:**
 
   - Right-click options to quickly access TTS and STT functionalities.
@@ -48,6 +94,8 @@ A Chrome extension designed to assist users with dyslexia by providing Text-to-S
   - Extension badge and icon change to indicate when STT is active.
 
 ---
+
+:
 
 ## Installation
 

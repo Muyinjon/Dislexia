@@ -217,11 +217,53 @@ function startSTT() {
       let interimTranscript = "";
 
       for (let i = lastResultIndex; i < event.results.length; ++i) {
+        let transcript = event.results[i][0].transcript.trim();
+
+        // Replace spoken punctuation phrases with actual punctuation symbols
+        transcript = transcript;
+        transcript = transcript
+          .replace(/\bcomma\b/gi, ",")
+          .replace(/\bperiod\b/gi, ".")
+          .replace(/\bquestion mark\b/gi, "?")
+          .replace(/\bexclamation mark\b/gi, "!")
+          .replace(/\bsemicolon\b/gi, ";")
+          .replace(/\bcolon\b/gi, ":")
+          .replace(/\bopen parenthesis\b/gi, "(")
+          .replace(/\bclose parenthesis\b/gi, ")")
+          .replace(/\bdash\b/gi, "-")
+          .replace(/\bhyphen\b/gi, "-")
+          .replace(/\bquote\b/gi, '"')
+          .replace(/\bsingle quote\b/gi, "'")
+          .replace(/\bdouble quote\b/gi, '"')
+          .replace(/\bopen bracket\b/gi, "[")
+          .replace(/\bclose bracket\b/gi, "]")
+          .replace(/\bopen brace\b/gi, "{")
+          .replace(/\bclose brace\b/gi, "}")
+          .replace(/\bellipsis\b/gi, "...")
+          .replace(/\bforward slash\b/gi, "/")
+          .replace(/\bbackslash\b/gi, "\\")
+          .replace(/\bgreater than\b/gi, ">")
+          .replace(/\bless than\b/gi, "<")
+          .replace(/\bampersand\b/gi, "&")
+          .replace(/\bat sign\b/gi, "@")
+          .replace(/\bdollar sign\b/gi, "$")
+          .replace(/\bpercent sign\b/gi, "%")
+          .replace(/\bnumber sign\b/gi, "#")
+          .replace(/\bstar\b/gi, "*")
+          .replace(/\bplus sign\b/gi, "+")
+          .replace(/\bminus sign\b/gi, "-")
+          .replace(/\bequal sign\b/gi, "=")
+          .replace(/\bunderscore\b/gi, "_")
+          .replace(/\bvertical bar\b/gi, "|")
+          .replace(/\bcaret\b/gi, "^")
+          .replace(/\btilda\b/gi, "~")
+          .replace(/\bgrave accent\b/gi, "`");
+
         if (event.results[i].isFinal) {
-          finalTranscript += event.results[i][0].transcript + " ";
+          finalTranscript += transcript + " ";
           lastResultIndex = i + 1; // Update the last result index to avoid reprocessing
         } else {
-          interimTranscript += event.results[i][0].transcript + " ";
+          interimTranscript += transcript + " ";
         }
       }
 
