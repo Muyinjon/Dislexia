@@ -1,30 +1,45 @@
 // contentScript.js
 
 console.log("Dislexia content script loaded.");
+let lastFocusedElement = null;
 
+// Single consolidated listener
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-  console.log("Received message:", message);
-
   if (message.action === "readAloud") {
+    // Handle readAloud
     readAloud(message.text);
     sendResponse({ status: "success" });
-  } else if (message.action === "readSelectedText") {
-    const selectedText = window.getSelection().toString();
-    if (selectedText) {
-      readAloud(selectedText);
-      sendResponse({ status: "success" });
-    } else {
-      sendResponse({ error: "Please select text on the page to read." });
-    }
   } else if (message.action === "startSTT") {
+    // Handle startSTT
     startSTT();
     sendResponse({ status: "success" });
   } else if (message.action === "stopTTS") {
+    // Handle stopTTS
     stopReadingAloud();
     sendResponse({ status: "success" });
+  } else if (message.action === "stopSTT") {
+    // Handle stopSTT
+    stopSTT();
+    sendResponse({ status: "success" });
   }
-  return true;
+  // Add other actions as needed
+  return true; // Indicates that you will send a response asynchronously (if needed)
 });
+// Event listener to capture focus on editable elements
+document.addEventListener(
+  "focusin",
+  (event) => {
+    const target = event.target;
+    if (
+      target.isContentEditable ||
+      ["INPUT", "TEXTAREA"].includes(target.tagName)
+    ) {
+      lastFocusedElement = target;
+      console.log("Last focused element updated:", lastFocusedElement);
+    }
+  },
+  true // Use the capture phase
+);
 
 // Function to read aloud the text
 function readAloud(selectedText) {
@@ -174,17 +189,22 @@ function startSTT() {
     return;
   }
 
-  // Get the active element (should be an input or textarea)
-  const activeElement = document.activeElement;
+  // Use the last focused editable element
+  const activeElement = lastFocusedElement;
   console.log("Active element:", activeElement);
 
   if (
-    !activeElement.isContentEditable &&
-    !["INPUT", "TEXTAREA"].includes(activeElement.tagName)
+    !activeElement ||
+    (!activeElement.isContentEditable &&
+      !["INPUT", "TEXTAREA"].includes(activeElement.tagName))
   ) {
-    alert("Please focus on a text input field or editable element.");
+    alert(
+      "Please focus on a text input field or editable element before starting STT."
+    );
     return;
   }
+
+  // Proceed with initializing speech recognition...
 
   // Get settings from storage
   chrome.storage.sync.get(["sttLanguage", "continuousSTT"], (data) => {
@@ -209,7 +229,7 @@ function startSTT() {
     recognition.onstart = () => {
       console.log("Speech recognition started");
       sttActive = true;
-      chrome.runtime.sendMessage({ type: "stt-active" });
+      chrome.runtime.sendMessage({ action: "stt-active" });
     };
 
     recognition.onresult = (event) => {
@@ -219,47 +239,7 @@ function startSTT() {
       for (let i = lastResultIndex; i < event.results.length; ++i) {
         let transcript = event.results[i][0].transcript.trim();
 
-        // Replace spoken punctuation phrases with actual punctuation symbols
-        transcript = transcript;
-        transcript = transcript
-          .replace(/\bcomma\b/gi, ",")
-          .replace(/\bperiod\b/gi, ".")
-          .replace(/\bdot\b/gi, ".")
-          .replace(/\bdots\b/gi, "...")
-          .replace(/\bquestion mark\b/gi, "?")
-          .replace(/\bexclamation mark\b/gi, "!")
-          .replace(/\bsemicolon\b/gi, ";")
-          .replace(/\bcolon\b/gi, ":")
-          .replace(/\bopen parenthesis\b/gi, "(")
-          .replace(/\bclose parenthesis\b/gi, ")")
-          .replace(/\bdash\b/gi, "-")
-          .replace(/\bhyphen\b/gi, "-")
-          .replace(/\bquote\b/gi, '"')
-          .replace(/\bsingle quote\b/gi, "'")
-          .replace(/\bdouble quote\b/gi, '"')
-          .replace(/\bopen bracket\b/gi, "[")
-          .replace(/\bclose bracket\b/gi, "]")
-          .replace(/\bopen brace\b/gi, "{")
-          .replace(/\bclose brace\b/gi, "}")
-          .replace(/\bellipsis\b/gi, "...")
-          .replace(/\bforward slash\b/gi, "/")
-          .replace(/\bbackslash\b/gi, "\\")
-          .replace(/\bgreater than\b/gi, ">")
-          .replace(/\bless than\b/gi, "<")
-          .replace(/\bampersand\b/gi, "&")
-          .replace(/\bat sign\b/gi, "@")
-          .replace(/\bdollar sign\b/gi, "$")
-          .replace(/\bpercent sign\b/gi, "%")
-          .replace(/\bnumber sign\b/gi, "#")
-          .replace(/\bstar\b/gi, "*")
-          .replace(/\bplus sign\b/gi, "+")
-          .replace(/\bminus sign\b/gi, "-")
-          .replace(/\bequal sign\b/gi, "=")
-          .replace(/\bunderscore\b/gi, "_")
-          .replace(/\bvertical bar\b/gi, "|")
-          .replace(/\bcaret\b/gi, "^")
-          .replace(/\btilda\b/gi, "~")
-          .replace(/\bgrave accent\b/gi, "`");
+        // Process transcript (e.g., punctuation replacement)
 
         if (event.results[i].isFinal) {
           finalTranscript += transcript + " ";
@@ -271,8 +251,8 @@ function startSTT() {
 
       console.log("Transcribed text:", finalTranscript + interimTranscript);
 
-      // Insert the transcribed text into the active element
-      if (document.activeElement === activeElement) {
+      // Insert the transcribed text into the stored active element
+      if (sttActive) {
         if (
           activeElement.tagName === "INPUT" ||
           activeElement.tagName === "TEXTAREA"
@@ -283,7 +263,7 @@ function startSTT() {
         }
       } else {
         alert(
-          "The focus has changed. Please activate STT again in the desired input field."
+          "STT has been stopped. Please activate STT again in the desired input field."
         );
         stopSTT();
       }
@@ -305,7 +285,7 @@ function startSTT() {
       console.log("Speech recognition ended");
       sttActive = false;
       lastResultIndex = 0; // Reset lastResultIndex for the next session
-      chrome.runtime.sendMessage({ type: "stt-inactive" });
+      chrome.runtime.sendMessage({ action: "stt-inactive" });
     };
 
     recognition.start();
@@ -321,13 +301,45 @@ function stopSTT() {
   }
 }
 
-// Add an event listener to capture the focused element when the STT button is clicked
-chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-  if (message.action === "startSTT") {
-    startSTT();
-    sendResponse({ status: "success" });
-  } else if (message.action === "stopSTT") {
-    stopSTT();
-    sendResponse({ status: "success" });
-  }
-});
+// Inject overlay for STT/TTS controls
+function injectOverlay() {
+  // Inject CSS
+  const link = document.createElement("link");
+  link.href = chrome.runtime.getURL("overlay.css");
+  link.rel = "stylesheet";
+  document.head.appendChild(link);
+
+  // Inject HTML
+  fetch(chrome.runtime.getURL("overlay.html"))
+    .then((response) => response.text())
+    .then((data) => {
+      const overlayElement = document.createElement("div");
+      overlayElement.innerHTML = data;
+      document.body.appendChild(overlayElement);
+
+      // Now that the overlay is in the DOM, add event listeners
+      document
+        .getElementById("startRecording")
+        .addEventListener("click", (event) => {
+          event.preventDefault(); // Prevent default action
+          startSTT();
+        });
+
+      document
+        .getElementById("stopRecording")
+        .addEventListener("click", (event) => {
+          event.preventDefault();
+          stopSTT();
+        });
+
+      document
+        .getElementById("pauseRecording")
+        .addEventListener("click", (event) => {
+          event.preventDefault();
+          pauseSTT();
+        });
+    });
+}
+
+// Run the injection function when content script is loaded
+injectOverlay();

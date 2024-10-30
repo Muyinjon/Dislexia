@@ -95,30 +95,40 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
 
 // Combine all message handling into one listener
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-  if (message.type === "tts-start") {
-    chrome.notifications.create("tts-start", {
-      type: "basic",
-      iconUrl: "icons/icon48.png",
-      title: "Reading Aloud",
-      message: "Started reading the selected text.",
-    });
-  } else if (message.type === "tts-end") {
-    chrome.notifications.create("tts-end", {
-      type: "basic",
-      iconUrl: "icons/icon48.png",
-      title: "Reading Completed",
-      message: "Finished reading the selected text.",
-    });
-  } else if (message.type === "stt-active") {
-    // Change the extension badge and icon to indicate STT is active
-    chrome.action.setBadgeText({ text: "STT" });
-    chrome.action.setBadgeBackgroundColor({ color: "#FF0000" });
-    // Optional: Change the icon
-    chrome.action.setIcon({ path: "icons/icon-stt-active.png" });
-  } else if (message.type === "stt-inactive") {
-    // Reset the badge and icon
-    chrome.action.setBadgeText({ text: "" });
-    chrome.action.setIcon({ path: "icons/icon48.png" });
+  switch (message.action) {
+    case "tts-start":
+      chrome.notifications.create("tts-start", {
+        type: "basic",
+        iconUrl: "icons/icon32.png",
+        title: "Reading Aloud",
+        message: "Started reading the selected text.",
+      });
+      break;
+    case "tts-end":
+      chrome.notifications.create("tts-end", {
+        type: "basic",
+        iconUrl: "icons/icon32.png",
+        title: "Reading Completed",
+        message: "Finished reading the selected text.",
+      });
+      break;
+    case "stt-active":
+      chrome.action.setIcon({ path: "icons/icon-stt-active.png" });
+      break;
+    case "stt-inactive":
+      chrome.action.setBadgeText({ text: "" });
+      chrome.action.setIcon({ path: "icons/icon32.png" });
+      break;
+    case "stopTTS":
+      chrome.tabs.query({ active: true, currentWindow: true }, ([tab]) => {
+        chrome.tabs.sendMessage(tab.id, { action: "stopTTS" });
+      });
+      break;
+    case "stopSTT":
+      chrome.tabs.query({ active: true, currentWindow: true }, ([tab]) => {
+        chrome.tabs.sendMessage(tab.id, { action: "stopSTT" });
+      });
+      break;
+    // Add more cases as needed
   }
-  // Handle other messages if any
 });

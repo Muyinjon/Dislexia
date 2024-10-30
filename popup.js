@@ -99,6 +99,15 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   }
 });
 
+// Add a message listener to handle stopTTS and stopSTT requests from the overlay
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  if (message.action === "stopTTS") {
+    stopReadingAloud();
+  } else if (message.action === "stopSTT") {
+    stopRecognition();
+  }
+});
+
 // Save settings to chrome.storage
 function saveSettings() {
   const rate = parseFloat(document.getElementById("rate").value);
@@ -140,7 +149,13 @@ function populateVoiceList() {
   const voiceSelect = document.getElementById("voice");
 
   function setVoiceOptions() {
-    const voices = speechSynthesis.getVoices();
+    let voices = speechSynthesis.getVoices();
+
+    if (!voices.length) {
+      // Try again after a delay
+      setTimeout(setVoiceOptions, 100);
+      return;
+    }
 
     voiceSelect.innerHTML = "";
 
@@ -159,11 +174,7 @@ function populateVoiceList() {
     });
   }
 
-  if (speechSynthesis.onvoiceschanged !== undefined) {
-    speechSynthesis.onvoiceschanged = setVoiceOptions;
-  } else {
-    setVoiceOptions();
-  }
+  setVoiceOptions();
 }
 
 function populateVoiceOptions(voices) {
@@ -264,54 +275,61 @@ function toggleRecognition() {
 }
 
 function startRecognition() {
-  recognition = new (window.SpeechRecognition ||
-    window.webkitSpeechRecognition)();
-  recognition.lang = "en-US"; // Set the language
-  recognition.interimResults = true; // Enable interim results for real-time feedback
-  recognition.continuous = true; // Keep the recognition running continuously
+  // Get the user-selected language
+  chrome.storage.sync.get("sttLanguage", (data) => {
+    recognition = new (window.SpeechRecognition ||
+      window.webkitSpeechRecognition)();
 
-  recognition.onstart = () => {
-    recognizing = true;
-    document.getElementById("start-stt-btn").textContent =
-      "Stop Speech Recognition (STT)";
-  };
+    recognition.lang = data.sttLanguage || "en-US"; // Set the language from storage
+    recognition.interimResults = true; // Enable interim results for real-time feedback
+    recognition.continuous = true; // Keep the recognition running continuously
 
-  recognition.onresult = (event) => {
-    let interimTranscript = ""; // Store the interim results
+    recognition.onstart = () => {
+      recognizing = true;
+      document.getElementById("start-stt-btn").textContent =
+        "Stop Speech Recognition (STT)";
+    };
 
-    // Iterate through the recognition results starting from the last processed index
-    for (let i = lastResultIndex; i < event.results.length; ++i) {
-      if (event.results[i].isFinal) {
-        finalTranscript += event.results[i][0].transcript + " ";
-        lastResultIndex = i + 1; // Update the last result index to avoid reprocessing
-      } else {
-        interimTranscript += event.results[i][0].transcript + " ";
+    recognition.onresult = (event) => {
+      let interimTranscript = ""; // Store the interim results
+
+      // Iterate through the recognition results starting from the last processed index
+      for (let i = lastResultIndex; i < event.results.length; ++i) {
+        if (event.results[i].isFinal) {
+          finalTranscript += event.results[i][0].transcript + " ";
+          lastResultIndex = i + 1; // Update the last result index to avoid reprocessing
+        } else {
+          interimTranscript += event.results[i][0].transcript + " ";
+        }
       }
-    }
 
-    // Update the result display area with both final and interim transcripts
-    document.getElementById("result").textContent =
-      finalTranscript + interimTranscript;
-  };
+      // Update the result display area with both final and interim transcripts
+      document.getElementById("result").textContent =
+        finalTranscript + interimTranscript;
+    };
 
-  recognition.onerror = (event) => {
-    console.error("Speech recognition error", event.error);
-    if (event.error === "not-allowed" || event.error === "denied") {
-      alert(
-        "Microphone access was denied. Please allow microphone access to use speech recognition."
-      );
-    } else {
-      alert("An error occurred during speech recognition: " + event.error);
-    }
-  };
+    recognition.onerror = (event) => {
+      console.error("Speech recognition error", event.error);
+      if (event.error === "not-allowed" || event.error === "denied") {
+        alert(
+          "Microphone access was denied. Please allow microphone access to use speech recognition."
+        );
+      } else {
+        alert("An error occurred during speech recognition: " + event.error);
+      }
+      recognizing = false;
+      document.getElementById("start-stt-btn").textContent =
+        "Start Speech Recognition (STT)";
+    };
 
-  recognition.onend = () => {
-    recognizing = false;
-    document.getElementById("start-stt-btn").textContent =
-      "Start Speech Recognition (STT)";
-  };
+    recognition.onend = () => {
+      recognizing = false;
+      document.getElementById("start-stt-btn").textContent =
+        "Start Speech Recognition (STT)";
+    };
 
-  recognition.start();
+    recognition.start();
+  });
 }
 
 function stopRecognition() {
