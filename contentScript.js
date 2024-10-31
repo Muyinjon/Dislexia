@@ -5,7 +5,11 @@ let lastFocusedElement = null;
 
 // Single consolidated listener
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-  if (message.action === "readAloud") {
+  if (message.action === "enableOverlay") {
+    injectOverlay();
+  } else if (message.action === "disableOverlay") {
+    removeOverlay();
+  } else if (message.action === "readAloud") {
     // Handle readAloud
     readAloud(message.text);
     sendResponse({ status: "success" });
@@ -204,6 +208,20 @@ function startSTT() {
     return;
   }
 
+  // Get the current content of the active element and set it as finalTranscript
+  if (
+    activeElement.tagName === "INPUT" ||
+    activeElement.tagName === "TEXTAREA"
+  ) {
+    finalTranscript = activeElement.value;
+  } else if (activeElement.isContentEditable) {
+    finalTranscript = activeElement.innerText || activeElement.textContent;
+  } else {
+    finalTranscript = ""; // Default to empty string if none of the above
+  }
+  // Reset lastResultIndex for the new session
+  lastResultIndex = 0;
+
   // Proceed with initializing speech recognition...
 
   // Get settings from storage
@@ -302,7 +320,14 @@ function stopSTT() {
 }
 
 // Inject overlay for STT/TTS controls
+let overlayInjected = false;
 function injectOverlay() {
+  if (overlayInjected || document.getElementById("overlay")) {
+    console.log("Overlay is already injected.");
+    overlayInjected = true;
+    return;
+  }
+
   // Inject CSS
   const link = document.createElement("link");
   link.href = chrome.runtime.getURL("overlay.css");
@@ -332,14 +357,38 @@ function injectOverlay() {
           stopSTT();
         });
 
-      document
-        .getElementById("pauseRecording")
-        .addEventListener("click", (event) => {
-          event.preventDefault();
-          pauseSTT();
-        });
+      overlayInjected = true;
     });
 }
+function removeOverlay() {
+  if (!overlayInjected) {
+    console.log("Overlay is not injected.");
+    return;
+  }
+
+  // Remove the overlay HTML
+  const overlayElement = document.getElementById("overlay");
+  if (overlayElement && overlayElement.parentNode) {
+    overlayElement.parentNode.removeChild(overlayElement);
+  }
+
+  // Remove the injected CSS
+  const links = document.querySelectorAll(
+    "link[href='" + chrome.runtime.getURL("overlay.css") + "']"
+  );
+  links.forEach((link) => link.parentNode.removeChild(link));
+
+  overlayInjected = false;
+}
+
+chrome.storage.sync.get("enableOverlay", (data) => {
+  const enableOverlay = data.enableOverlay !== false; // Default to true if not set
+  if (enableOverlay) {
+    injectOverlay();
+  } else {
+    console.log("Overlay is disabled.");
+  }
+});
 
 // Run the injection function when content script is loaded
 injectOverlay();

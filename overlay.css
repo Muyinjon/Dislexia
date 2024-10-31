@@ -1,19 +1,47 @@
 #overlay {
+  max-width: min-content;
+  max-height: min-content;
   position: fixed;
   top: 20%;
-  right: 0;
-  background-color: rgba(255, 255, 255, 0.8);
-  padding: 20px;
-  border-radius: 8px;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
-  z-index: 9999;
+  right: 2%;
+  background: #fdfde7;
+  background-image: url("https://www.transparenttextures.com/patterns/paper-fibers.png");
+  padding: 5px;
+  border-style: solid;
+  border-width: 2px;
+  box-shadow: rgba(0, 0, 0, 0.2) 15px 28px 25px -18px;
+  border-bottom-left-radius: 15px 255px;
+  border-bottom-right-radius: 225px 15px;
+  border-top-left-radius: 255px 15px;
+  border-top-right-radius: 15px 225px;
+  z-index: 99999;
 }
 
 #overlay button {
   display: block;
-  margin: 10px 0;
-  padding: 10px;
+  align-self: center;
+  background-color: #fff;
+  font-family: "Comic Sans MS", cursive, sans-serif;
+  font-size: medium;
+  box-sizing: border-box;
+  color: #41403e;
   cursor: pointer;
+  border-color: #41403e;
+  border-style: solid;
+  border-width: 2px;
+  box-shadow: rgba(0, 0, 0, 0.2) 15px 28px 25px -18px;
+  border-bottom-left-radius: 15px 255px;
+  border-bottom-right-radius: 225px 15px;
+  border-top-left-radius: 255px 15px;
+  border-top-right-radius: 15px 225px;
+  user-select: none;
+  text-align: center;
+  margin: 5px auto;
+}
+
+#overlay button:hover {
+  box-shadow: rgba(0, 0, 0, 0.3) 2px 8px 8px -5px;
+  transform: translate3d(0, 2px, 0);
 }
 
 #overlay {

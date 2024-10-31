@@ -41,6 +41,9 @@ document.addEventListener("DOMContentLoaded", () => {
   document
     .getElementById("continuous-stt")
     .addEventListener("change", saveSettings);
+  document
+    .getElementById("enable-overlay")
+    .addEventListener("change", saveSettings);
 
   // Populate the language and voice lists
   populateVoiceList();
@@ -63,6 +66,7 @@ function loadSettings() {
       "enableHighlight",
       "sttLanguage",
       "continuousSTT",
+      "enableOverlay",
     ],
     (data) => {
       document.getElementById("rate").value =
@@ -82,6 +86,8 @@ function loadSettings() {
         data.sttLanguage || "en-US";
       document.getElementById("continuous-stt").checked =
         data.continuousSTT !== false;
+      document.getElementById("enable-overlay").checked =
+        data.enableOverlay !== false; // Default to true if not set
 
       console.log("Settings loaded:", data);
     }
@@ -121,6 +127,7 @@ function saveSettings() {
   const enableHighlight = document.getElementById("enable-highlight").checked;
   const sttLanguage = document.getElementById("stt-language").value;
   const continuousSTT = document.getElementById("continuous-stt").checked;
+  const enableOverlay = document.getElementById("enable-overlay").checked;
 
   chrome.storage.sync.set(
     {
@@ -133,12 +140,22 @@ function saveSettings() {
       enableHighlight,
       sttLanguage,
       continuousSTT,
+      enableOverlay,
     },
     () => {
       if (chrome.runtime.lastError) {
         console.error("Error saving settings:", chrome.runtime.lastError);
       } else {
         console.log("Settings saved");
+
+        // Send a message to the content script to enable or disable the overlay
+        chrome.tabs.query({ active: true, currentWindow: true }, ([tab]) => {
+          if (tab) {
+            chrome.tabs.sendMessage(tab.id, {
+              action: enableOverlay ? "enableOverlay" : "disableOverlay",
+            });
+          }
+        });
       }
     }
   );
