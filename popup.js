@@ -28,7 +28,7 @@ document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("voice").addEventListener("change", saveSettings);
   document
     .getElementById("highlight-color")
-    .addEventListener("input", saveSettings);
+    .addEventListener("change", saveSettings);
   document
     .getElementById("highlight-opacity")
     .addEventListener("input", saveSettings);
@@ -87,7 +87,7 @@ function loadSettings() {
       document.getElementById("continuous-stt").checked =
         data.continuousSTT !== false;
       document.getElementById("enable-overlay").checked =
-        data.enableOverlay !== false; // Default to true if not set
+        data.enableOverlay === true; // Default to true if not set
 
       console.log("Settings loaded:", data);
     }
