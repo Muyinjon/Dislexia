@@ -12,6 +12,10 @@ chrome.runtime.onInstalled.addListener(() => {
     title: "Speak to Text",
     contexts: ["editable"],
   });
+  chrome.storage.sync.set({ overlayEnabled: false }); // Set overlay to be off by default
+});
+chrome.action.onClicked.addListener((tab) => {
+  chrome.runtime.sendMessage({ action: "toggleOverlay" });
 });
 
 // Combine all context menu click handling into one listener
@@ -114,10 +118,19 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       break;
     case "stt-active":
       chrome.action.setIcon({ path: "icons/icon-stt-active.png" });
+      chrome.storage.sync.set({ overlayEnabled: true }); // Enable overlay for STT
+      chrome.tabs.query({ active: true, currentWindow: true }, ([tab]) => {
+        chrome.tabs.sendMessage(tab.id, { action: "enableOverlay" });
+      });
+
       break;
     case "stt-inactive":
       chrome.action.setBadgeText({ text: "" });
       chrome.action.setIcon({ path: "icons/icon32.png" });
+      chrome.storage.sync.set({ overlayEnabled: false }); // Disable overlay when STT stops
+      chrome.tabs.query({ active: true, currentWindow: true }, ([tab]) => {
+        chrome.tabs.sendMessage(tab.id, { action: "disableOverlay" });
+      });
       break;
     case "stopTTS":
       chrome.tabs.query({ active: true, currentWindow: true }, ([tab]) => {
@@ -127,8 +140,20 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     case "stopSTT":
       chrome.tabs.query({ active: true, currentWindow: true }, ([tab]) => {
         chrome.tabs.sendMessage(tab.id, { action: "stopSTT" });
+        chrome.tabs.sendMessage(tab.id, { action: "disableOverlay" });
       });
       break;
+    case "toggleOverlay": // Optional: manually toggle overlay on/off
+      chrome.storage.sync.get("overlayEnabled", (data) => {
+        const newStatus = !data.overlayEnabled;
+        chrome.storage.sync.set({ overlayEnabled: newStatus });
+        const action = newStatus ? "enableOverlay" : "disableOverlay";
+        chrome.tabs.query({ active: true, currentWindow: true }, ([tab]) => {
+          chrome.tabs.sendMessage(tab.id, { action });
+        });
+      });
+      break;
+
     // Add more cases as needed
   }
 });
