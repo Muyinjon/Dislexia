@@ -1,6 +1,7 @@
 # Dislexia Chrome Extension
 
-A Chrome extension designed to assist users with dyslexia by providing Text-to-Speech (TTS) and Speech-to-Text (STT) functionalities. The extension allows users to have selected text read aloud with customizable settings and to transcribe spoken words into text input fields.
+A Chrome extension designed to assist users with dyslexia by providing Text-to-Speech (TTS) and Speech-to-Text (STT) functionalities. The extension allows users
+to have selected text read aloud with customizable settings and to transcribe spoken words into text input fields.
 
 ## Table of Contents
 
@@ -43,9 +44,8 @@ A Chrome extension designed to assist users with dyslexia by providing Text-to-S
 
   ### Punctuation Handling
 
-  **Supported Punctuation Commands:**
-  **Speech-to-Text Punctuation Rules**
-  This extension allows you to use voice commands to dictate text into any input or textarea on a webpage. You can also include punctuation by using specific phrases during speech recognition.
+  **Supported Punctuation Commands:** **Speech-to-Text Punctuation Rules** This extension allows you to use voice commands to dictate text into any input or
+  textarea on a webpage. You can also include punctuation by using specific phrases during speech recognition.
 
 Supported Punctuation Commands:
 
@@ -157,7 +157,7 @@ Supported Punctuation Commands:
 2. **Use Context Menu:**
 
    - Right-click within the focused text field.
-   - Choose **"Speak to Text"** from the context menu.
+   - Choose **"Speech to Text"** from the context menu.
 
    **OR**
 
@@ -492,12 +492,14 @@ If you continue to experience issues or have questions:
 
 ---
 
-**Note:** This extension relies on browser APIs that may have limitations or behave differently across browsers and operating systems. Always ensure your browser is up to date for the best experience.
+**Note:** This extension relies on browser APIs that may have limitations or behave differently across browsers and operating systems. Always ensure your
+browser is up to date for the best experience.
 
 ---
 
 # End of README
 
-This README provides a comprehensive guide to using and troubleshooting the Dislexia Chrome Extension. By following the instructions and utilizing the troubleshooting steps, users should be able to effectively use the extension and resolve common issues.
+This README provides a comprehensive guide to using and troubleshooting the Dislexia Chrome Extension. By following the instructions and utilizing the
+troubleshooting steps, users should be able to effectively use the extension and resolve common issues.
 
 If you need further assistance or have suggestions for improvement, please reach out through the provided contact channels.

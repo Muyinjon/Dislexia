@@ -8,8 +8,8 @@ chrome.runtime.onInstalled.addListener(() => {
     contexts: ["selection"],
   });
   chrome.contextMenus.create({
-    id: "speak-to-text",
-    title: "Speak to Text",
+    id: "speech-to-text",
+    title: "Speech to Text",
     contexts: ["editable"],
   });
   chrome.storage.sync.set({ overlayEnabled: false }); // Set overlay to be off by default
@@ -22,45 +22,37 @@ chrome.action.onClicked.addListener((tab) => {
 chrome.contextMenus.onClicked.addListener((info, tab) => {
   if (info.menuItemId === "read-aloud" && info.selectionText) {
     // Handle "Read This Aloud" action
-    chrome.tabs.sendMessage(
-      tab.id,
-      { action: "readAloud", text: info.selectionText },
-      (response) => {
-        if (chrome.runtime.lastError) {
-          console.error("Error:", JSON.stringify(chrome.runtime.lastError));
-          // Inject content script if not present
-          chrome.scripting.executeScript(
-            {
-              target: { tabId: tab.id },
-              files: ["contentScript.js"],
-            },
-            () => {
-              if (chrome.runtime.lastError) {
-                console.error(
-                  "Failed to inject content script:",
-                  JSON.stringify(chrome.runtime.lastError)
-                );
-                // Notify the user
-                chrome.notifications.create({
-                  type: "basic",
-                  iconUrl: "icons/icon48.png",
-                  title: "Dislexia Extension",
-                  message:
-                    "Failed to inject content script. Please refresh the page and try again.",
-                });
-              } else {
-                // Retry sending the message
-                chrome.tabs.sendMessage(tab.id, {
-                  action: "readAloud",
-                  text: info.selectionText,
-                });
-              }
+    chrome.tabs.sendMessage(tab.id, { action: "readAloud", text: info.selectionText }, (response) => {
+      if (chrome.runtime.lastError) {
+        console.error("Error:", JSON.stringify(chrome.runtime.lastError));
+        // Inject content script if not present
+        chrome.scripting.executeScript(
+          {
+            target: { tabId: tab.id },
+            files: ["contentScript.js"],
+          },
+          () => {
+            if (chrome.runtime.lastError) {
+              console.error("Failed to inject content script:", JSON.stringify(chrome.runtime.lastError));
+              // Notify the user
+              chrome.notifications.create({
+                type: "basic",
+                iconUrl: "icons/icon48.png",
+                title: "Dislexia Extension",
+                message: "Failed to inject content script. Please refresh the page and try again.",
+              });
+            } else {
+              // Retry sending the message
+              chrome.tabs.sendMessage(tab.id, {
+                action: "readAloud",
+                text: info.selectionText,
+              });
             }
-          );
-        }
+          }
+        );
       }
-    );
-  } else if (info.menuItemId === "speak-to-text") {
+    });
+  } else if (info.menuItemId === "speech-to-text") {
     // Handle "Speak to Text" action
     chrome.tabs.sendMessage(tab.id, { action: "startSTT" }, (response) => {
       if (chrome.runtime.lastError) {
@@ -73,17 +65,13 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
           },
           () => {
             if (chrome.runtime.lastError) {
-              console.error(
-                "Failed to inject content script:",
-                JSON.stringify(chrome.runtime.lastError)
-              );
+              console.error("Failed to inject content script:", JSON.stringify(chrome.runtime.lastError));
               // Notify the user
               chrome.notifications.create({
                 type: "basic",
                 iconUrl: "icons/icon48.png",
                 title: "Dislexia Extension",
-                message:
-                  "Failed to inject content script. Please refresh the page and try again.",
+                message: "Failed to inject content script. Please refresh the page and try again.",
               });
             } else {
               // Retry sending the message
