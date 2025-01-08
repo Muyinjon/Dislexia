@@ -95,7 +95,13 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         title: "Reading Aloud",
         message: "Started reading the selected text.",
       });
+      // Turn ON the overlay:
+      chrome.storage.sync.set({ overlayEnabled: true });
+      chrome.tabs.query({ active: true, currentWindow: true }, ([tab]) => {
+        chrome.tabs.sendMessage(tab.id, { action: "enableOverlay" });
+      });
       break;
+
     case "tts-end":
       chrome.notifications.create("tts-end", {
         type: "basic",
@@ -103,7 +109,13 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         title: "Reading Completed",
         message: "Finished reading the selected text.",
       });
+      // Turn OFF the overlay:
+      chrome.storage.sync.set({ overlayEnabled: false });
+      chrome.tabs.query({ active: true, currentWindow: true }, ([tab]) => {
+        chrome.tabs.sendMessage(tab.id, { action: "disableOverlay" });
+      });
       break;
+
     case "stt-active":
       chrome.action.setIcon({ path: "icons/icon-stt-active.png" });
       chrome.storage.sync.set({ overlayEnabled: true }); // Enable overlay for STT
