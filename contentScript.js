@@ -6,41 +6,40 @@ let overlayInjected = false;
 
 // Single consolidated listener
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-  if (message.action === "enableOverlay") {
-    if (!overlayInjected) {
-      injectOverlay();
-    }
-  } else if (message.action === "disableOverlay") {
-    removeOverlay();
-  } else if (message.action === "readAloud") {
-    // Handle readAloud
-    readAloud(message.text);
-    sendResponse({ status: "success" });
-  } else if (message.action === "startSTT") {
-    // Handle startSTT
-    startSTT();
-    sendResponse({ status: "success" });
-  } else if (message.action === "stopTTS") {
-    // Handle stopTTS
-    stopReadingAloud();
-    sendResponse({ status: "success" });
-  } else if (message.action === "stopSTT") {
-    // Handle stopSTT
-    stopSTT();
-    sendResponse({ status: "success" });
+  switch (message.action) {
+    case "enableOverlay":
+      if (!overlayInjected) injectOverlay();
+      break;
+    case "disableOverlay":
+      removeOverlay();
+      break;
+    case "readAloud":
+      readAloud(message.text);
+      sendResponse({ status: "success" });
+      break;
+    case "startSTT":
+      startSTT();
+      sendResponse({ status: "success" });
+      break;
+    case "stopTTS":
+      stopReadingAloud();
+      sendResponse({ status: "success" });
+      break;
+    case "stopSTT":
+      stopSTT();
+      sendResponse({ status: "success" });
+      break;
+    default:
+      break;
   }
-  // Add other actions as needed
-  return true; // Indicates that you will send a response asynchronously (if needed)
+  return true; // in case any async responses
 });
 // Event listener to capture focus on editable elements
 document.addEventListener(
   "focusin",
   (event) => {
     const target = event.target;
-    if (
-      target.isContentEditable ||
-      ["INPUT", "TEXTAREA"].includes(target.tagName)
-    ) {
+    if (target.isContentEditable || ["INPUT", "TEXTAREA"].includes(target.tagName)) {
       lastFocusedElement = target;
       console.log("Last focused element updated:", lastFocusedElement);
     }
@@ -77,70 +76,58 @@ function readAloud(selectedText) {
   // Start the highlighter with the selected text
   highlighter.startHighlightReader(selectedText);
 
-  chrome.storage.sync.get(
-    [
-      "rate",
-      "pitch",
-      "volume",
-      "voiceURI",
-      "highlightColor",
-      "highlightOpacity",
-      "enableHighlight",
-    ],
-    (data) => {
-      const utterance = new SpeechSynthesisUtterance(selectedText);
+  chrome.storage.sync.get(["rate", "pitch", "volume", "voiceURI", "highlightColor", "highlightOpacity", "enableHighlight"], (data) => {
+    const utterance = new SpeechSynthesisUtterance(selectedText);
 
-      // Use stored settings or defaults
-      utterance.rate = parseFloat(data.rate) || 1;
-      utterance.pitch = parseFloat(data.pitch) || 1;
-      utterance.volume = parseFloat(data.volume) || 1;
+    // Use stored settings or defaults
+    utterance.rate = parseFloat(data.rate) || 1;
+    utterance.pitch = parseFloat(data.pitch) || 1;
+    utterance.volume = parseFloat(data.volume) || 1;
 
-      // Set voice if specified
-      if (data.voiceURI) {
-        const voices = speechSynthesis.getVoices();
-        const voice = voices.find((v) => v.voiceURI === data.voiceURI);
-        if (voice) {
-          utterance.voice = voice;
-        }
+    // Set voice if specified
+    if (data.voiceURI) {
+      const voices = speechSynthesis.getVoices();
+      const voice = voices.find((v) => v.voiceURI === data.voiceURI);
+      if (voice) {
+        utterance.voice = voice;
       }
-      // Set up event handlers for the utterance
-      utterance.onstart = () => {
-        console.log("TTS started");
-        // Update buttons if needed
-      };
-
-      // Show notification when speaking starts
-      chrome.runtime.sendMessage({ type: "tts-start" });
-
-      // Remove any existing highlights
-      clearExistingHighlights();
-
-      // Highlight the selected text if enabled
-      if (data.enableHighlight !== false) {
-        const color = data.highlightColor || "#FFFF00";
-        const opacity =
-          data.highlightOpacity !== undefined ? data.highlightOpacity : 1;
-        highlightSelection(color, opacity);
-      }
-
-      // Remove highlight when speaking ends
-      utterance.onend = () => {
-        ttsPaused = false;
-        if (document.getElementById("pauseTTS")) {
-          document.getElementById("pauseTTS").textContent = "Pause TTS";
-        }
-        if (document.getElementById("ttsControls")) {
-          document.getElementById("ttsControls").style.display = "none";
-        }
-
-        clearExistingHighlights();
-        // Show notification when speaking ends
-        chrome.runtime.sendMessage({ type: "tts-end" });
-      };
-
-      speechSynthesis.speak(utterance);
     }
-  );
+    // Set up event handlers for the utterance
+    utterance.onstart = () => {
+      console.log("TTS started");
+      // Update buttons if needed
+    };
+
+    // Show notification when speaking starts
+    chrome.runtime.sendMessage({ type: "tts-start" });
+
+    // Remove any existing highlights
+    clearExistingHighlights();
+
+    // Highlight the selected text if enabled
+    if (data.enableHighlight !== false) {
+      const color = data.highlightColor || "#FFFF00";
+      const opacity = data.highlightOpacity !== undefined ? data.highlightOpacity : 1;
+      highlightSelection(color, opacity);
+    }
+
+    // Remove highlight when speaking ends
+    utterance.onend = () => {
+      ttsPaused = false;
+      if (document.getElementById("pauseTTS")) {
+        document.getElementById("pauseTTS").textContent = "Pause TTS";
+      }
+      if (document.getElementById("ttsControls")) {
+        document.getElementById("ttsControls").style.display = "none";
+      }
+
+      clearExistingHighlights();
+      // Show notification when speaking ends
+      chrome.runtime.sendMessage({ type: "tts-end" });
+    };
+
+    speechSynthesis.speak(utterance);
+  });
 }
 
 let ttsPaused = false; // Flag to track TTS pause state
@@ -308,45 +295,40 @@ class Highlighter {
     let utter = new SpeechSynthesisUtterance(text);
 
     // Fetch user settings
-    chrome.storage.sync.get(
-      ["rate", "pitch", "volume", "voiceURI", "highlightColor"],
-      (data) => {
-        utter.rate = parseFloat(data.rate) || 1;
-        utter.pitch = parseFloat(data.pitch) || 1;
-        utter.volume = parseFloat(data.volume) || 1;
+    chrome.storage.sync.get(["rate", "pitch", "volume", "voiceURI", "highlightColor"], (data) => {
+      utter.rate = parseFloat(data.rate) || 1;
+      utter.pitch = parseFloat(data.pitch) || 1;
+      utter.volume = parseFloat(data.volume) || 1;
 
-        if (data.voiceURI) {
-          const voices = speechSynthesis.getVoices();
-          const voice = voices.find((v) => v.voiceURI === data.voiceURI);
-          if (voice) {
-            utter.voice = voice;
-          }
+      if (data.voiceURI) {
+        const voices = speechSynthesis.getVoices();
+        const voice = voices.find((v) => v.voiceURI === data.voiceURI);
+        if (voice) {
+          utter.voice = voice;
         }
-
-        // Set highlight color
-        this.color = data.highlightColor || "#add8e6"; // Default color if not set
-
-        // Set up event handlers
-        utter.onboundary = (e) => {
-          if (e.name === "word") {
-            this.changeWord(
-              text.substring(e.charIndex, e.charIndex + e.charLength)
-            );
-          }
-        };
-
-        utter.onend = () => {
-          this.readPath.innerHTML = this.pathHTML;
-          this.currIndex = 0;
-          this.going = false;
-        };
-
-        utter.onerror = console.error;
-
-        // Start speaking
-        speechSynthesis.speak(utter);
       }
-    );
+
+      // Set highlight color
+      this.color = data.highlightColor || "#add8e6"; // Default color if not set
+
+      // Set up event handlers
+      utter.onboundary = (e) => {
+        if (e.name === "word") {
+          this.changeWord(text.substring(e.charIndex, e.charIndex + e.charLength));
+        }
+      };
+
+      utter.onend = () => {
+        this.readPath.innerHTML = this.pathHTML;
+        this.currIndex = 0;
+        this.going = false;
+      };
+
+      utter.onerror = console.error;
+
+      // Start speaking
+      speechSynthesis.speak(utter);
+    });
   }
 
   end() {
@@ -408,42 +390,18 @@ class Highlighter {
     let is_word = new RegExp("[a-zA-Z0-9]");
     if (this.readPath != null && this.currIndex != -1) {
       while (
-        (this.pathHTML
-          .substring(
-            this.wordArr[this.currIndex],
-            this.wordArr[this.currIndex + 1]
-          )
-          .includes("<") ||
-          !is_word.test(
-            this.pathHTML.substring(
-              this.wordArr[this.currIndex],
-              this.wordArr[this.currIndex + 1]
-            )
-          )) &&
+        (this.pathHTML.substring(this.wordArr[this.currIndex], this.wordArr[this.currIndex + 1]).includes("<") ||
+          !is_word.test(this.pathHTML.substring(this.wordArr[this.currIndex], this.wordArr[this.currIndex + 1]))) &&
         this.currIndex < this.wordArr.length
       ) {
         this.currIndex++;
       }
-      if (
-        this.pathHTML
-          .substring(
-            this.wordArr[this.currIndex],
-            this.wordArr[this.currIndex + 1]
-          )
-          .indexOf(str) != -1 &&
-        this.currIndex < this.wordArr.length
-      ) {
-        let cancel_space =
-          this.pathHTML[this.wordArr[this.currIndex + 1] - 1] == " " ? 1 : 0;
-        this.readPath.innerHTML = `${this.pathHTML.slice(
-          0,
-          this.wordArr[this.currIndex]
-        )}<c style="background: ${this.color};">${this.pathHTML.slice(
+      if (this.pathHTML.substring(this.wordArr[this.currIndex], this.wordArr[this.currIndex + 1]).indexOf(str) != -1 && this.currIndex < this.wordArr.length) {
+        let cancel_space = this.pathHTML[this.wordArr[this.currIndex + 1] - 1] == " " ? 1 : 0;
+        this.readPath.innerHTML = `${this.pathHTML.slice(0, this.wordArr[this.currIndex])}<c style="background: ${this.color};">${this.pathHTML.slice(
           this.wordArr[this.currIndex],
           this.wordArr[this.currIndex + 1] - cancel_space
-        )}</c>${this.pathHTML.slice(
-          this.wordArr[this.currIndex + 1] - cancel_space
-        )}`;
+        )}</c>${this.pathHTML.slice(this.wordArr[this.currIndex + 1] - cancel_space)}`;
         this.currIndex++;
       }
     }
@@ -536,22 +494,13 @@ function startSTT() {
   const activeElement = lastFocusedElement;
   console.log("Active element:", activeElement);
 
-  if (
-    !activeElement ||
-    (!activeElement.isContentEditable &&
-      !["INPUT", "TEXTAREA"].includes(activeElement.tagName))
-  ) {
-    alert(
-      "Please focus on a text input field or editable element before starting STT."
-    );
+  if (!activeElement || (!activeElement.isContentEditable && !["INPUT", "TEXTAREA"].includes(activeElement.tagName))) {
+    alert("Please focus on a text input field or editable element before starting STT.");
     return;
   }
 
   // Get the current content of the active element and set it as finalTranscript
-  if (
-    activeElement.tagName === "INPUT" ||
-    activeElement.tagName === "TEXTAREA"
-  ) {
+  if (activeElement.tagName === "INPUT" || activeElement.tagName === "TEXTAREA") {
     finalTranscript = activeElement.value;
   } else if (activeElement.isContentEditable) {
     finalTranscript = activeElement.innerText || activeElement.textContent;
@@ -583,8 +532,7 @@ function startSTT() {
     const continuous = data.continuousSTT !== false;
     console.log("STT Language:", language, "Continuous:", continuous);
 
-    const SpeechRecognition =
-      window.SpeechRecognition || window.webkitSpeechRecognition;
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 
     if (!SpeechRecognition) {
       alert("Speech recognition is not supported in this browser.");
@@ -670,18 +618,13 @@ function startSTT() {
 
       // Insert the transcribed text into the stored active element
       if (sttActive) {
-        if (
-          activeElement.tagName === "INPUT" ||
-          activeElement.tagName === "TEXTAREA"
-        ) {
+        if (activeElement.tagName === "INPUT" || activeElement.tagName === "TEXTAREA") {
           activeElement.value = finalTranscript + interimTranscript;
         } else if (activeElement.isContentEditable) {
           activeElement.innerHTML = finalTranscript + interimTranscript;
         }
       } else {
-        alert(
-          "STT has been stopped. Please activate STT again in the desired input field."
-        );
+        alert("STT has been stopped. Please activate STT again in the desired input field.");
         stopSTT();
       }
     };
@@ -689,9 +632,7 @@ function startSTT() {
     recognition.onerror = (event) => {
       console.error("Speech recognition error:", event.error);
       if (event.error === "not-allowed" || event.error === "denied") {
-        alert(
-          "Microphone access was denied. Please allow microphone access to use speech recognition."
-        );
+        alert("Microphone access was denied. Please allow microphone access to use speech recognition.");
       } else {
         alert("An error occurred during speech recognition: " + event.error);
       }
@@ -753,19 +694,15 @@ function injectOverlay() {
       document.body.appendChild(overlayElement);
 
       // Add event listeners
-      document
-        .getElementById("startRecording")
-        .addEventListener("click", (event) => {
-          event.preventDefault();
-          startSTT();
-        });
+      document.getElementById("startRecording").addEventListener("click", (event) => {
+        event.preventDefault();
+        startSTT();
+      });
 
-      document
-        .getElementById("stopRecording")
-        .addEventListener("click", (event) => {
-          event.preventDefault();
-          stopSTT();
-        });
+      document.getElementById("stopRecording").addEventListener("click", (event) => {
+        event.preventDefault();
+        stopSTT();
+      });
       document.getElementById("pauseTTS").addEventListener("click", (event) => {
         event.preventDefault();
         pauseResumeTTS();
@@ -784,20 +721,11 @@ function removeOverlay() {
   const overlay = document.getElementById("overlay");
   if (overlay) overlay.remove();
 
-  const links = document.querySelectorAll(
-    "link[href='" + chrome.runtime.getURL("overlay.css") + "']"
-  );
+  const links = document.querySelectorAll("link[href='" + chrome.runtime.getURL("overlay.css") + "']");
   links.forEach((link) => link.parentNode.removeChild(link));
 
   overlayInjected = false;
 }
-chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-  if (message.action === "enableOverlay") {
-    injectOverlay();
-  } else if (message.action === "disableOverlay") {
-    removeOverlay();
-  }
-});
 
 chrome.storage.sync.get("enableOverlay", (data) => {
   const enableOverlay = data.enableOverlay === true; // Default to true if not set

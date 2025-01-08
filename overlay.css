@@ -15,6 +15,8 @@
   border-top-left-radius: 255px 15px;
   border-top-right-radius: 15px 225px;
   z-index: 99999;
+  pointer-events: auto; /* Allow interaction with overlay */
+  user-select: none; /* Prevent text selection */
 }
 
 #overlay button {
@@ -42,10 +44,6 @@
 #overlay button:hover {
   box-shadow: rgba(0, 0, 0, 0.3) 2px 8px 8px -5px;
   transform: translate3d(0, 2px, 0);
-}
-
-#overlay {
-  pointer-events: auto; /* Allow interaction with overlay */
 }
 
 #overlay * {
